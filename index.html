@@ -302,6 +302,8 @@ function sourceList(sec) {
 function doneSet(sec) {
   var recs = sec === 'ICS-I' ? data.ics1.concat(data.nc) : sec === 'ICS-II' ? data.ics2 : data.ics3;
   var s = new Set(recs.map(function (r) { return up(r.code); }));
+  var marked = sec === 'ICS-I' ? data.farmers : sec === 'ICS-II' ? data.ics1 : data.ics2;   // "Done" markers in the sheet
+  marked.forEach(function (r) { if (/^done/i.test(r.done || r.next || '')) s.add(up(r.code)); });
   queue.forEach(function (q) { if (q.section === sec) s.add(up(q.code)); });
   return s;
 }
@@ -637,6 +639,8 @@ $('cfgBtn').onclick = setApi;
 $('sheetBtn').href = SHEET_URL; $('sheetLink').href = SHEET_URL;
 window.addEventListener('online', function () { updateNet(); sync(true); });
 window.addEventListener('offline', updateNet);
+setInterval(function () { if (!document.hidden && navigator.onLine && !submitting) sync(true); }, 180000);   // keep every inspector's view fresh
+document.addEventListener('visibilitychange', function () { if (!document.hidden && navigator.onLine) sync(true); });
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
