@@ -85,6 +85,17 @@ th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
 th:first-child,td:first-child{text-align:left}
 th{font-size:14px;color:var(--muted);font-weight:700}
 td.left{font-weight:700;color:var(--c)}
+button.num{font:inherit;font-weight:700;color:var(--c);background:none;border:0;border-bottom:2px solid var(--c);padding:2px 6px;min-width:44px;min-height:38px;cursor:pointer;border-radius:4px}
+button.num.zero{color:var(--muted);border-bottom-color:transparent;cursor:default}
+button.stat{border:2px solid transparent;font:inherit;color:inherit;cursor:pointer}
+button.stat.sel,button.num.sel{background:var(--c);color:#fff}
+.detail{margin-top:14px;border:2px solid var(--c);border-radius:10px;overflow:hidden}
+.detail .dh{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--c);color:#fff;padding:8px 12px}
+.detail .dh b{font-size:16px}
+.detail .dh button{background:rgba(0,0,0,.25);border:0;color:#fff;border-radius:8px;min-width:40px;min-height:40px;font-size:18px;cursor:pointer}
+.detail ul{max-height:420px;overflow:auto;padding:4px 12px}
+.rem small{display:block;color:var(--muted);font-size:14px}
+.rem .vil{font-weight:700;color:var(--c);border-bottom:2px solid var(--c-line);padding-top:10px}
 details{margin-top:10px}
 summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:flex;align-items:center}
 .rem{font-size:16px;margin:0;padding:0;list-style:none}
@@ -199,18 +210,20 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><b id="sTotal">0</b><span>សរុប Total</span></div>
-      <div class="stat"><b id="sDone">0</b><span>ធ្វើបាន Done</span></div>
-      <div class="stat"><b id="sLeft">0</b><span>នៅសល់ Left</span></div>
+      <button class="stat" data-k="total"><b id="sTotal">0</b><span>សរុប Total</span></button>
+      <button class="stat" data-k="done"><b id="sDone">0</b><span>ធ្វើបាន Done</span></button>
+      <button class="stat" data-k="left"><b id="sLeft">0</b><span>នៅសល់ Left</span></button>
     </div>
     <div class="bar"><i id="barFill" style="width:0%"></i></div>
     <p class="pct" id="pct">0%</p>
+    <p class="hint" id="tapHint">ចុចលើលេខ ដើម្បីមើលឈ្មោះកសិករ។</p>
     <div id="byVillage"></div>
+    <div class="detail hidden" id="detail" tabindex="-1">
+      <div class="dh"><b id="dTitle"></b><button id="dClose" aria-label="Close">&times;</button></div>
+      <ul class="rem" id="dList"></ul>
+    </div>
     <a class="btn ghost" id="sheetLink" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:14px">មើលព័ត៌មានលម្អិតក្នុង Google Sheet</a>
-    <details id="remBox" class="hidden">
-      <summary>បញ្ជីនៅសល់ · Remaining farmers</summary>
-      <ul class="rem" id="remList"></ul>
-    </details>
+
   </section>
 </main>
 
@@ -259,6 +272,7 @@ var cur = store.get('ics_sec', 'ICS-I');
 if (!SEC[cur]) cur = 'ICS-I';
 var form = {};
 var dash = { irpg: '', village: '' };
+var detail = null;   // { kind: 'total'|'done'|'left', irpg, village }
 var syncing = false, submitting = false;
 
 /* ---------- helpers ---------- */
@@ -428,7 +442,7 @@ function applySection() {
   updateNote();
   refreshIrpg();
 
-  dash = { irpg: '', village: '' };
+  dash = { irpg: '', village: '' }; detail = null;
   renderDash();
   renderQueue();
 }
@@ -596,21 +610,59 @@ function renderDash() {
     var rows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
     by.innerHTML = '<table><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>សល់</th></tr></thead><tbody>' +
       rows.map(function (r) {
-        return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + r.t + '</td><td>' + r.d + '</td><td class="left">' + (r.t - r.d) + '</td></tr>';
+        return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
       }).join('') + '</tbody></table>';
   } else if (!total) {
     by.innerHTML = '<p class="hint">' + (cur === 'ICS-I' ? 'ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។'
       : 'មិនទាន់មានកសិករ Compliance = Yes ក្នុង ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' ទេ។') + '</p>';
   } else by.innerHTML = '';
 
-  var remaining = f.filter(function (x) { return !done.has(up(x.code)); });
-  var box = $('remBox');
-  if ((dash.irpg || dash.village) && remaining.length) {
-    box.classList.remove('hidden');
-    $('remList').innerHTML = remaining.slice(0, 300).map(function (x) {
-      return '<li><code>' + esc(x.code) + '</code>' + esc(x.hus) + (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') + '</li>';
-    }).join('');
-  } else box.classList.add('hidden');
+  renderDetail(list, done);
+}
+function numBtn(n, kind, r) {
+  return '<button class="num' + (n ? '' : ' zero') + (detail && detail.kind === kind && detail.irpg === r.irpg && detail.village === r.village ? ' sel' : '') +
+    '" data-k="' + kind + '" data-i="' + esc(r.irpg) + '" data-v="' + esc(r.village) + '"' + (n ? '' : ' disabled') + '>' + n + '</button>';
+}
+function recInfo(sec) {
+  var recs = sec === 'ICS-I' ? data.ics1.concat(data.nc) : sec === 'ICS-II' ? data.ics2 : data.ics3;
+  var m = {};
+  recs.forEach(function (r) { m[up(r.code)] = r; });
+  queue.forEach(function (q) { if (q.section === sec && !m[up(q.code)]) m[up(q.code)] = { inspector: q.inspector, date: q.date, compliance: q.compliance, pending: true }; });
+  return m;
+}
+function renderDetail(list, done) {
+  var box = $('detail');
+  $('tapHint').classList.toggle('hidden', !!detail);
+  document.querySelectorAll('button.stat').forEach(function (b) {
+    b.classList.toggle('sel', !!detail && detail.kind === b.dataset.k && detail.fromTile);
+  });
+  if (!detail) { box.classList.add('hidden'); return; }
+  var items = list.filter(function (x) {
+    if (detail.irpg && x.irpg !== detail.irpg) return false;
+    if (detail.village && x.village !== detail.village) return false;
+    var d = done.has(up(x.code));
+    return detail.kind === 'total' || (detail.kind === 'done' ? d : !d);
+  }).sort(function (a, b) {
+    return (a.irpg + a.village).localeCompare(b.irpg + b.village, undefined, { numeric: true }) || a.code.localeCompare(b.code, undefined, { numeric: true });
+  });
+  var label = { total: 'សរុប', done: 'ធ្វើរួច', left: 'មិនទាន់ធ្វើ' }[detail.kind];
+  var where = (detail.irpg || 'All IRPG') + (detail.village ? ' · ' + detail.village : '');
+  $('dTitle').textContent = label + ' · ' + where + ' (' + items.length + ')';
+  var info = detail.kind === 'left' ? {} : recInfo(cur);
+  var lastV = null, out = '';
+  items.slice(0, 600).forEach(function (x) {
+    if (!detail.village && (x.irpg + '|' + x.village) !== lastV) {
+      lastV = x.irpg + '|' + x.village;
+      out += '<li class="vil">' + esc(x.irpg) + ' · ' + esc(x.village) + '</li>';
+    }
+    var r = info[up(x.code)], sub = '';
+    if (r) sub = '<small>' + esc(r.inspector || '') + (r.date ? ' · ' + esc(r.date) : '') +
+      (r.compliance ? ' · ' + esc(r.compliance) : '') + (r.pending ? ' · រង់ចាំផ្ញើ' : '') + '</small>';
+    out += '<li><code>' + esc(x.code) + '</code>' + esc(x.hus) + (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') + sub + '</li>';
+  });
+  if (items.length > 600) out += '<li>… និង ' + (items.length - 600) + ' ទៀត (ជ្រើស Village ដើម្បីបង្រួម)</li>';
+  $('dList').innerHTML = out || '<li>មិនមានឈ្មោះទេ។</li>';
+  box.classList.remove('hidden');
 }
 
 /* ---------- wiring ---------- */
@@ -630,8 +682,24 @@ $('fIrpg').onchange = function () { form.irpg = this.value; form.village = ''; $
 $('fVillage').onchange = function () { form.village = this.value; $('fCode').value = ''; refreshCodes(); rememberSticky(); };
 $('fCode').oninput = matchFarmer;
 $('fStatus').onchange = function () { form.status = this.value; };
-$('dIrpg').onchange = function () { dash.irpg = this.value; dash.village = ''; renderDash(); };
-$('dVillage').onchange = function () { dash.village = this.value; renderDash(); };
+$('dIrpg').onchange = function () { dash.irpg = this.value; dash.village = ''; detail = null; renderDash(); };
+$('dVillage').onchange = function () { dash.village = this.value; detail = null; renderDash(); };
+function showDetail(d) {
+  detail = d; renderDash();
+  var box = $('detail'); if (!box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('byVillage').addEventListener('click', function (e) {
+  var b = e.target.closest('button.num'); if (!b || b.disabled) return;
+  if (detail && detail.kind === b.dataset.k && detail.irpg === b.dataset.i && detail.village === b.dataset.v) { detail = null; renderDash(); return; }
+  showDetail({ kind: b.dataset.k, irpg: b.dataset.i, village: b.dataset.v });
+});
+document.querySelectorAll('button.stat').forEach(function (b) {
+  b.onclick = function () {
+    if (detail && detail.fromTile && detail.kind === b.dataset.k) { detail = null; renderDash(); return; }
+    showDetail({ kind: b.dataset.k, irpg: dash.irpg, village: dash.village, fromTile: true });
+  };
+});
+$('dClose').onclick = function () { detail = null; renderDash(); };
 $('saveBtn').onclick = saveOffline;
 $('submitBtn').onclick = submitQueue;
 $('syncBtn').onclick = function () { sync(false); };
