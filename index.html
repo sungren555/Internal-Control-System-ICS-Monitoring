@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ICS Monitoring</title>
-<meta name="theme-color" content="#2f7d3a" id="themeColor">
+<meta name="theme-color" content="#256b30" id="themeColor">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -13,48 +13,48 @@
 <meta name="apple-mobile-web-app-title" content="ICS Monitor">
 <style>
 :root{
-  --ink:#1c2a21; --muted:#5d6b62; --line:#d9dfd6; --bg:#f4f6f2; --card:#ffffff;
-  --yes:#2f7d3a; --no:#c0392b; --resign:#4a4f55; --fallow:#c77a0a;
-  --c:#2f7d3a; --c-soft:color-mix(in srgb,var(--c) 11%,#fff); --c-line:color-mix(in srgb,var(--c) 35%,#fff);
+  --ink:#0f1a13; --muted:#34423a; --line:#9aa79e; --bg:#f4f6f2; --card:#ffffff;
+  --yes:#256b30; --no:#b3261e; --resign:#3b4046; --fallow:#a85f00;
+  --c:#256b30; --c-soft:color-mix(in srgb,var(--c) 11%,#fff); --c-line:color-mix(in srgb,var(--c) 35%,#fff);
   --r:10px;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);
-  font:16px/1.5 "Noto Sans Khmer","Khmer OS Battambang","Khmer UI",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font:17px/1.55 "Noto Sans Khmer","Khmer OS Battambang","Khmer UI",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 header{background:var(--c);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 0;position:sticky;top:0;z-index:5}
 .top{display:flex;align-items:center;gap:10px;justify-content:space-between}
-.top h1{font-size:17px;margin:0;font-weight:700;line-height:1.25}
-.top small{display:block;font-weight:400;opacity:.85;font-size:12px}
+.top h1{font-size:18px;margin:0;font-weight:700;line-height:1.25}
+.top small{display:block;font-weight:500;opacity:1;font-size:13.5px}
 .chips{display:flex;gap:6px;align-items:center}
-.chip{font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.2);white-space:nowrap}
+.chip{font-size:14px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.25);white-space:nowrap}
 .chip.off{background:#fff;color:var(--no);font-weight:700}
-.iconbtn{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:8px;width:34px;height:34px;font-size:17px;cursor:pointer}
+.iconbtn{background:rgba(0,0,0,.25);border:0;color:#fff;border-radius:8px;width:38px;height:38px;font-size:19px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 .tabs{display:flex;gap:6px;margin-top:10px}
-.tab{flex:1;border:0;background:rgba(255,255,255,.16);color:#fff;padding:8px 4px 7px;border-radius:10px 10px 0 0;
+.tab{flex:1;border:0;background:var(--t);color:#fff;padding:8px 4px 7px;border-radius:10px 10px 0 0;
   font:inherit;cursor:pointer;line-height:1.25;border-bottom:4px solid var(--t)}
-.tab b{display:block;font-size:15px}
-.tab span{font-size:11px;opacity:.9}
-.tab[aria-selected=true]{background:var(--bg);color:var(--t);border-bottom-color:var(--bg)}
-.tab:not([aria-selected=true]){border-bottom-color:var(--t);background:color-mix(in srgb,var(--t) 70%,#000 0%);}
+.tab b{display:block;font-size:17px}
+.tab span{font-size:13px;opacity:1}
+.tab[aria-selected=true]{background:var(--bg);color:var(--t);border-bottom-color:var(--bg);font-weight:700}
+.tab:not([aria-selected=true]){border-bottom-color:var(--t);background:var(--t);}
 main{max-width:640px;margin:0 auto;padding:14px}
 .card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:var(--r);padding:14px;margin-bottom:14px}
-.card h2{font-size:16px;margin:0 0 10px;color:var(--c)}
+.card h2{font-size:18px;margin:0 0 10px;color:var(--c)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+label{display:block;font-size:15px;font-weight:600;color:var(--ink);margin:12px 0 5px}
 label em{font-style:normal;color:var(--no)}
-select,input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:10px 10px;min-height:46px}
+select,input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:8px;padding:10px 10px;min-height:50px;font-weight:500}
 select:focus,input:focus,textarea:focus,button:focus-visible{outline:3px solid var(--c-line);border-color:var(--c)}
 input[readonly]{background:var(--c-soft)}
-.farmer{background:var(--c-soft);border:1px solid var(--c-line);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:15px}
+.farmer{background:var(--c-soft);border:2px solid var(--c-line);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:17px}
 .farmer .none{color:var(--muted)}
 .farmer .bad{color:var(--no);font-weight:600}
 .farmer dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
-.farmer dt{color:var(--muted);font-size:13px}
-.farmer dd{margin:0;font-weight:600}
+.farmer dt{color:var(--muted);font-size:14.5px}
+.farmer dd{margin:0;font-weight:700;color:var(--ink)}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{flex:1;min-width:84px;min-height:46px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.seg button{flex:1;min-width:84px;min-height:50px;border:2px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-weight:700;font-size:17px;color:var(--ink);cursor:pointer}
 .seg button.on{color:#fff;border-color:transparent}
 .seg button.on[data-v=Yes]{background:var(--yes)}
 .seg button.on[data-v=No]{background:var(--no)}
@@ -63,31 +63,31 @@ input[readonly]{background:var(--c-soft)}
 .btns{display:grid;gap:10px;margin-top:16px}
 .btn{min-height:50px;border-radius:10px;border:0;font:inherit;font-weight:700;font-size:16px;cursor:pointer;padding:0 14px}
 .btn.primary{background:var(--c);color:#fff}
-.btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+.btn.ghost{background:#fff;color:var(--c);border:3px solid var(--c)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
-.q-item{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 0;font-size:14px}
+.hint{font-size:14.5px;color:var(--muted);margin:8px 0 0}
+.q-item{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 0;font-size:16px}
 .q-item:first-of-type{border-top:0}
 .q-item .t{flex:1}
-.q-item .t small{display:block;color:var(--muted)}
+.q-item .t small{display:block;color:var(--muted);font-size:14px}
 .q-item button{border:0;background:none;color:var(--no);font-size:20px;min-width:36px;min-height:36px;cursor:pointer}
-.tag{font-size:11px;border-radius:5px;padding:1px 6px;color:#fff;margin-left:6px}
+.tag{font-size:13px;border-radius:5px;padding:1px 6px;color:#fff;margin-left:6px}
 .tag.Yes{background:var(--yes)}.tag.No{background:var(--no)}.tag.Resign{background:var(--resign)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stat{background:var(--c-soft);border-radius:8px;padding:8px 6px;text-align:center}
 .stat b{display:block;font-size:26px;line-height:1.1;color:var(--c)}
-.stat span{font-size:12px;color:var(--muted)}
+.stat span{font-size:14px;color:var(--muted)}
 .bar{height:12px;background:#e4e9e1;border-radius:99px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--c);border-radius:99px;transition:width .3s}
-.pct{font-size:13px;color:var(--muted);margin:4px 0 0;text-align:right}
-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+.pct{font-size:15px;color:var(--muted);margin:4px 0 0;text-align:right}
+table{width:100%;border-collapse:collapse;font-size:16px;margin-top:10px}
 th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
 th:first-child,td:first-child{text-align:left}
-th{font-size:12px;color:var(--muted);font-weight:600}
+th{font-size:14px;color:var(--muted);font-weight:700}
 td.left{font-weight:700;color:var(--c)}
 details{margin-top:10px}
 summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:flex;align-items:center}
-.rem{font-size:14px;margin:0;padding:0;list-style:none}
+.rem{font-size:16px;margin:0;padding:0;list-style:none}
 .rem li{padding:5px 0;border-bottom:1px dashed var(--line)}
 .rem code{font-weight:700;margin-right:6px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1c2a21;color:#fff;
@@ -104,14 +104,15 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
     <h1>Internal Control System (ICS) Monitoring<small id="syncInfo">មិនទាន់ទាញទិន្នន័យ</small></h1>
     <div class="chips">
       <span class="chip" id="netChip">Online</span>
+      <a class="iconbtn" id="sheetBtn" target="_blank" rel="noopener" title="Open Google Sheet" aria-label="Open Google Sheet">&#9638;</a>
       <button class="iconbtn" id="syncBtn" title="Refresh farmers" aria-label="Refresh farmers">&#8635;</button>
       <button class="iconbtn" id="cfgBtn" title="Settings" aria-label="Settings">&#9881;</button>
     </div>
   </div>
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" data-sec="ICS-I"  style="--t:#2f7d3a"><b>ICS-I</b><span>ដាំស្រូវ · Rice planting</span></button>
-    <button class="tab" role="tab" data-sec="ICS-II" style="--t:#c77a0a"><b>ICS-II</b><span>បោកស្រូវ · Threshing</span></button>
-    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#2c5f9e"><b>ICS-III</b><span>ក្រោយប្រមូលផល · Burn check</span></button>
+    <button class="tab" role="tab" data-sec="ICS-I"  style="--t:#256b30"><b>ICS-I</b><span>ដាំស្រូវ · Rice planting</span></button>
+    <button class="tab" role="tab" data-sec="ICS-II" style="--t:#a85f00"><b>ICS-II</b><span>បោកស្រូវ · Threshing</span></button>
+    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f"><b>ICS-III</b><span>ក្រោយប្រមូលផល · Burn check</span></button>
   </div>
 </header>
 
@@ -205,6 +206,7 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
     <div class="bar"><i id="barFill" style="width:0%"></i></div>
     <p class="pct" id="pct">0%</p>
     <div id="byVillage"></div>
+    <a class="btn ghost" id="sheetLink" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:14px">មើលព័ត៌មានលម្អិតក្នុង Google Sheet</a>
     <details id="remBox" class="hidden">
       <summary>បញ្ជីនៅសល់ · Remaining farmers</summary>
       <ul class="rem" id="remList"></ul>
@@ -220,13 +222,14 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
 
 /* ======= SETTINGS: paste your Apps Script Web app URL (ends with /exec) ======= */
 const API_URL = 'https://script.google.com/macros/s/AKfycbw00uMO30du1WjM4Zl0WZtrwN_lSsfZ1u4HLwJGPXOaLZP6erVHQz4lcsS6QMTRyoOu/exec';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/15rGxdGxmObah82YREOxX3NDeLOOSukxVkYLhDes889I/edit?usp=sharing';
 const DEFAULT_INSPECTORS = [];   // e.g. ['Sok Dara', 'Chan Sophea']; inspectors can also be added in the app
 /* ============================================================================== */
 
 const SEC = {
-  'ICS-I':   { color: '#2f7d3a', extraName: 'Planting',   extraOpts: ['Yes', 'Fallow'], compl: ['Yes', 'No', 'Resign'] },
-  'ICS-II':  { color: '#c77a0a', extraName: 'Threshing',  extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] },
-  'ICS-III': { color: '#2c5f9e', extraName: 'Burn Check', extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] }
+  'ICS-I':   { color: '#256b30', extraName: 'Planting',   extraOpts: ['Yes', 'Fallow'], compl: ['Yes', 'No', 'Resign'] },
+  'ICS-II':  { color: '#a85f00', extraName: 'Threshing',  extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] },
+  'ICS-III': { color: '#1f4f8f', extraName: 'Burn Check', extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] }
 };
 const TITLES = {
   'ICS-I': 'ICS-I · ដាំស្រូវ Rice planting',
@@ -248,7 +251,7 @@ const store = {
 };
 
 var apiUrl = API_URL || store.get('ics_api', '');
-var data = store.get('ics_data', { farmers: [], ics1: [], nc: [], ics2: [], ics3: [], time: null });
+var data = store.get('ics_data', { farmers: [], inspectors: [], ics1: [], nc: [], ics2: [], ics3: [], time: null });
 var queue = store.get('ics_queue', []);
 var inspectors = store.get('ics_inspectors', DEFAULT_INSPECTORS.slice());
 var sticky = store.get('ics_sticky', {});
@@ -321,12 +324,18 @@ function fillSelect(sel, items, placeholder, value) {
     items.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('');
   sel.value = items.indexOf(value) >= 0 ? value : '';
 }
+function inspectorList() {
+  var fromSheet = data.inspectors || [];
+  return fromSheet.length ? fromSheet : inspectors;
+}
 function fillInspectors() {
-  var sel = $('fInspector');
+  var sel = $('fInspector'), list = inspectorList();
+  var canAdd = !(data.inspectors && data.inspectors.length);
   sel.innerHTML = '<option value="">— ជ្រើសរើស —</option>' +
-    inspectors.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('') +
-    '<option value="__add">+ បន្ថែមឈ្មោះ Add inspector</option>';
-  sel.value = inspectors.indexOf(form.inspector) >= 0 ? form.inspector : '';
+    list.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('') +
+    (canAdd ? '<option value="__add">+ បន្ថែមឈ្មោះ Add inspector</option>' : '');
+  sel.value = list.indexOf(form.inspector) >= 0 ? form.inspector : '';
+  form.inspector = sel.value;
 }
 function refreshIrpg() {
   var list = sourceList(cur);
@@ -535,10 +544,10 @@ async function sync(quiet) {
     var res = await fetch(apiUrl + (apiUrl.indexOf('?') < 0 ? '?' : '&') + 'action=sync&t=' + Date.now(), { redirect: 'follow' });
     var j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Server error');
-    data = { farmers: j.farmers || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], time: j.time };
+    data = { farmers: j.farmers || [], inspectors: j.inspectors || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], time: j.time };
     store.set('ics_data', data);
     showSyncInfo();
-    refreshIrpg(); renderDash();
+    fillInspectors(); refreshIrpg(); renderDash();
     if (!quiet) toast('ទាញទិន្នន័យថ្មីរួចហើយ ✓');
   } catch (e) {
     if (!quiet) toast('ទាញទិន្នន័យមិនបាន: ' + (e.message || ''));
@@ -625,6 +634,7 @@ $('saveBtn').onclick = saveOffline;
 $('submitBtn').onclick = submitQueue;
 $('syncBtn').onclick = function () { sync(false); };
 $('cfgBtn').onclick = setApi;
+$('sheetBtn').href = SHEET_URL; $('sheetLink').href = SHEET_URL;
 window.addEventListener('online', function () { updateNet(); sync(true); });
 window.addEventListener('offline', updateNet);
 
