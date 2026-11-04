@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ICS Monitoring</title>
+<meta name="theme-color" content="#2f7d3a" id="themeColor">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ICS Monitor">
+<style>
+:root{
+  --ink:#1c2a21; --muted:#5d6b62; --line:#d9dfd6; --bg:#f4f6f2; --card:#ffffff;
+  --yes:#2f7d3a; --no:#c0392b; --resign:#4a4f55; --fallow:#c77a0a;
+  --c:#2f7d3a; --c-soft:color-mix(in srgb,var(--c) 11%,#fff); --c-line:color-mix(in srgb,var(--c) 35%,#fff);
+  --r:10px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.5 "Noto Sans Khmer","Khmer OS Battambang","Khmer UI",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+header{background:var(--c);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 0;position:sticky;top:0;z-index:5}
+.top{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.top h1{font-size:17px;margin:0;font-weight:700;line-height:1.25}
+.top small{display:block;font-weight:400;opacity:.85;font-size:12px}
+.chips{display:flex;gap:6px;align-items:center}
+.chip{font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.2);white-space:nowrap}
+.chip.off{background:#fff;color:var(--no);font-weight:700}
+.iconbtn{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:8px;width:34px;height:34px;font-size:17px;cursor:pointer}
+.tabs{display:flex;gap:6px;margin-top:10px}
+.tab{flex:1;border:0;background:rgba(255,255,255,.16);color:#fff;padding:8px 4px 7px;border-radius:10px 10px 0 0;
+  font:inherit;cursor:pointer;line-height:1.25;border-bottom:4px solid var(--t)}
+.tab b{display:block;font-size:15px}
+.tab span{font-size:11px;opacity:.9}
+.tab[aria-selected=true]{background:var(--bg);color:var(--t);border-bottom-color:var(--bg)}
+.tab:not([aria-selected=true]){border-bottom-color:var(--t);background:color-mix(in srgb,var(--t) 70%,#000 0%);}
+main{max-width:640px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.card h2{font-size:16px;margin:0 0 10px;color:var(--c)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+label em{font-style:normal;color:var(--no)}
+select,input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:10px 10px;min-height:46px}
+select:focus,input:focus,textarea:focus,button:focus-visible{outline:3px solid var(--c-line);border-color:var(--c)}
+input[readonly]{background:var(--c-soft)}
+.farmer{background:var(--c-soft);border:1px solid var(--c-line);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:15px}
+.farmer .none{color:var(--muted)}
+.farmer .bad{color:var(--no);font-weight:600}
+.farmer dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.farmer dt{color:var(--muted);font-size:13px}
+.farmer dd{margin:0;font-weight:600}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1;min-width:84px;min-height:46px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.seg button.on{color:#fff;border-color:transparent}
+.seg button.on[data-v=Yes]{background:var(--yes)}
+.seg button.on[data-v=No]{background:var(--no)}
+.seg button.on[data-v=Resign]{background:var(--resign)}
+.seg button.on[data-v=Fallow]{background:var(--fallow)}
+.btns{display:grid;gap:10px;margin-top:16px}
+.btn{min-height:50px;border-radius:10px;border:0;font:inherit;font-weight:700;font-size:16px;cursor:pointer;padding:0 14px}
+.btn.primary{background:var(--c);color:#fff}
+.btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.q-item{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 0;font-size:14px}
+.q-item:first-of-type{border-top:0}
+.q-item .t{flex:1}
+.q-item .t small{display:block;color:var(--muted)}
+.q-item button{border:0;background:none;color:var(--no);font-size:20px;min-width:36px;min-height:36px;cursor:pointer}
+.tag{font-size:11px;border-radius:5px;padding:1px 6px;color:#fff;margin-left:6px}
+.tag.Yes{background:var(--yes)}.tag.No{background:var(--no)}.tag.Resign{background:var(--resign)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.stat{background:var(--c-soft);border-radius:8px;padding:8px 6px;text-align:center}
+.stat b{display:block;font-size:26px;line-height:1.1;color:var(--c)}
+.stat span{font-size:12px;color:var(--muted)}
+.bar{height:12px;background:#e4e9e1;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c);border-radius:99px;transition:width .3s}
+.pct{font-size:13px;color:var(--muted);margin:4px 0 0;text-align:right}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.left{font-weight:700;color:var(--c)}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:flex;align-items:center}
+.rem{font-size:14px;margin:0;padding:0;list-style:none}
+.rem li{padding:5px 0;border-bottom:1px dashed var(--line)}
+.rem code{font-weight:700;margin-right:6px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1c2a21;color:#fff;
+  padding:10px 16px;border-radius:10px;font-size:14px;max-width:90%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;text-align:center}
+#toast.show{opacity:1}
+.hidden{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <h1>Internal Control System (ICS) Monitoring<small id="syncInfo">មិនទាន់ទាញទិន្នន័យ</small></h1>
+    <div class="chips">
+      <span class="chip" id="netChip">Online</span>
+      <button class="iconbtn" id="syncBtn" title="Refresh farmers" aria-label="Refresh farmers">&#8635;</button>
+      <button class="iconbtn" id="cfgBtn" title="Settings" aria-label="Settings">&#9881;</button>
+    </div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-sec="ICS-I"  style="--t:#2f7d3a"><b>ICS-I</b><span>ដាំស្រូវ · Rice planting</span></button>
+    <button class="tab" role="tab" data-sec="ICS-II" style="--t:#c77a0a"><b>ICS-II</b><span>បោកស្រូវ · Threshing</span></button>
+    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#2c5f9e"><b>ICS-III</b><span>ក្រោយប្រមូលផល · Burn check</span></button>
+  </div>
+</header>
+
+<main>
+  <section class="card" id="formCard">
+    <h2 id="formTitle">ICS-I</h2>
+
+    <div class="row">
+      <div>
+        <label for="fDate">កាលបរិច្ឆេទ Date <em>*</em></label>
+        <input type="date" id="fDate">
+      </div>
+      <div>
+        <label for="fInspector">អ្នកត្រួតពិនិត្យ Inspector <em>*</em></label>
+        <select id="fInspector"></select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="fIrpg">ក្រុមផលិត IRPG <em>*</em></label>
+        <select id="fIrpg"></select>
+      </div>
+      <div>
+        <label for="fVillage">ភូមិ Village <em>*</em></label>
+        <select id="fVillage"></select>
+      </div>
+    </div>
+
+    <label for="fCode">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
+    <input id="fCode" list="codeList" autocomplete="off" autocapitalize="characters" placeholder="ឧ. BM001 ឬ 1">
+    <datalist id="codeList"></datalist>
+
+    <div class="farmer" id="farmerBox"><span class="none">ជ្រើសភូមិ រួចវាយ Family_ID</span></div>
+
+    <div id="statusWrap">
+      <label for="fStatus">ស្ថានភាពកសិករ Farmer Status <em>*</em></label>
+      <select id="fStatus">
+        <option value="">— ជ្រើសរើស —</option>
+        <option value="Existing farmer">Existing farmer / សមាជិកចាស់</option>
+        <option value="Rejoin">Rejoin / ចូលសាថ្មី</option>
+        <option value="New farmer">New farmer / សមាជិកថ្មីឆ្នាំនេះ</option>
+      </select>
+    </div>
+
+    <label>Compliance <em>*</em></label>
+    <div class="seg" id="segCompl"></div>
+
+    <div id="extraWrap">
+      <label id="extraLabel">Planting <em>*</em></label>
+      <div class="seg" id="segExtra"></div>
+    </div>
+
+    <div id="noteWrap" class="hidden">
+      <label for="fNote">កំណត់សម្គាល់ Note</label>
+      <textarea id="fNote" rows="3" placeholder="មូលហេតុ Compliance No / Resign"></textarea>
+    </div>
+
+    <div class="btns">
+      <button class="btn ghost" id="saveBtn">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button>
+    </div>
+    <p class="hint">ទិន្នន័យនៅក្នុងទូរស័ព្ទសិន។ ពេលមានអ៊ីនធឺណិត ទើបចុច Submit។</p>
+  </section>
+
+  <section class="card" id="queueCard">
+    <h2>រង់ចាំផ្ញើ · Waiting to submit (<span id="qCount">0</span>)</h2>
+    <div id="qList"><p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p></div>
+    <div class="btns">
+      <button class="btn primary" id="submitBtn" disabled>Submit</button>
+    </div>
+    <p class="hint" id="submitHint"></p>
+  </section>
+
+  <section class="card" id="dashCard">
+    <h2 id="dashTitle">របាយការណ៍ Progress</h2>
+    <div class="row">
+      <div>
+        <label for="dIrpg">IRPG</label>
+        <select id="dIrpg"></select>
+      </div>
+      <div>
+        <label for="dVillage">Village</label>
+        <select id="dVillage"></select>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="sTotal">0</b><span>សរុប Total</span></div>
+      <div class="stat"><b id="sDone">0</b><span>ធ្វើបាន Done</span></div>
+      <div class="stat"><b id="sLeft">0</b><span>នៅសល់ Left</span></div>
+    </div>
+    <div class="bar"><i id="barFill" style="width:0%"></i></div>
+    <p class="pct" id="pct">0%</p>
+    <div id="byVillage"></div>
+    <details id="remBox" class="hidden">
+      <summary>បញ្ជីនៅសល់ · Remaining farmers</summary>
+      <ul class="rem" id="remList"></ul>
+    </details>
+  </section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ======= SETTINGS: paste your Apps Script Web app URL (ends with /exec) ======= */
+const API_URL = '';
+const DEFAULT_INSPECTORS = [];   // e.g. ['Sok Dara', 'Chan Sophea']; inspectors can also be added in the app
+/* ============================================================================== */
+
+const SEC = {
+  'ICS-I':   { color: '#2f7d3a', extraName: 'Planting',   extraOpts: ['Yes', 'Fallow'], compl: ['Yes', 'No', 'Resign'] },
+  'ICS-II':  { color: '#c77a0a', extraName: 'Threshing',  extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] },
+  'ICS-III': { color: '#2c5f9e', extraName: 'Burn Check', extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] }
+};
+const TITLES = {
+  'ICS-I': 'ICS-I · ដាំស្រូវ Rice planting',
+  'ICS-II': 'ICS-II · កត់ត្រាការបោកស្រូវ Threshing record',
+  'ICS-III': 'ICS-III · ក្រោយប្រមូលផល Post harvest / Burn check'
+};
+const STATUSES = ['Existing farmer', 'Rejoin', 'New farmer'];
+
+const $ = function (id) { return document.getElementById(id); };
+const up = function (s) { return String(s || '').trim().toUpperCase(); };
+const esc = function (s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+};
+const store = {
+  get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+var apiUrl = API_URL || store.get('ics_api', '');
+var data = store.get('ics_data', { farmers: [], ics1: [], nc: [], ics2: [], ics3: [], time: null });
+var queue = store.get('ics_queue', []);
+var inspectors = store.get('ics_inspectors', DEFAULT_INSPECTORS.slice());
+var sticky = store.get('ics_sticky', {});
+var cur = store.get('ics_sec', 'ICS-I');
+if (!SEC[cur]) cur = 'ICS-I';
+var form = {};
+var dash = { irpg: '', village: '' };
+var syncing = false, submitting = false;
+
+/* ---------- helpers ---------- */
+function today() {
+  var d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function toast(msg) {
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('show'); }, 3200);
+}
+function uid() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
+function uniqSorted(arr) {
+  return Array.from(new Set(arr.filter(Boolean))).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); });
+}
+function latestBy(arr) {
+  var m = new Map(); arr.forEach(function (r) { m.set(up(r.code), r); }); return Array.from(m.values());
+}
+function matchStatus(s) {
+  var v = String(s || '').trim().toLowerCase();
+  for (var i = 0; i < STATUSES.length; i++) if (STATUSES[i].toLowerCase() === v) return STATUSES[i];
+  return '';
+}
+
+/* ---------- data sources ---------- */
+function sourceList(sec) {
+  if (sec === 'ICS-I') {
+    return data.farmers.map(function (f) {
+      return { irpg: f.irpg, village: f.village, code: f.code, hus: f.husEn || f.husKh || '', wife: f.wifeEn || f.wifeKh || '',
+               yearJoin: f.yearJoin, status: f.status };
+    });
+  }
+  var prev = sec === 'ICS-II' ? data.ics1 : data.ics2;
+  return latestBy(prev.filter(function (r) { return r.compliance === 'Yes'; })).map(function (r) {
+    return { irpg: r.irpg, village: r.village, code: r.code, hus: r.hus, wife: r.wife, yearJoin: r.yearJoin, status: r.status };
+  });
+}
+function doneSet(sec) {
+  var recs = sec === 'ICS-I' ? data.ics1.concat(data.nc) : sec === 'ICS-II' ? data.ics2 : data.ics3;
+  var s = new Set(recs.map(function (r) { return up(r.code); }));
+  queue.forEach(function (q) { if (q.section === sec) s.add(up(q.code)); });
+  return s;
+}
+
+/* ---------- form ---------- */
+function mkSeg(el, opts, key, onChange) {
+  el.innerHTML = opts.map(function (o) {
+    return '<button type="button" data-v="' + o + '" class="' + (form[key] === o ? 'on' : '') + '">' + o + '</button>';
+  }).join('');
+  Array.from(el.children).forEach(function (b) {
+    b.onclick = function () {
+      form[key] = (form[key] === b.dataset.v) ? '' : b.dataset.v;
+      mkSeg(el, opts, key, onChange);
+      if (onChange) onChange();
+    };
+  });
+}
+function fillSelect(sel, items, placeholder, value) {
+  sel.innerHTML = '<option value="">' + placeholder + '</option>' +
+    items.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('');
+  sel.value = items.indexOf(value) >= 0 ? value : '';
+}
+function fillInspectors() {
+  var sel = $('fInspector');
+  sel.innerHTML = '<option value="">— ជ្រើសរើស —</option>' +
+    inspectors.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('') +
+    '<option value="__add">+ បន្ថែមឈ្មោះ Add inspector</option>';
+  sel.value = inspectors.indexOf(form.inspector) >= 0 ? form.inspector : '';
+}
+function refreshIrpg() {
+  var list = sourceList(cur);
+  fillSelect($('fIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), '— IRPG —', form.irpg);
+  form.irpg = $('fIrpg').value;
+  refreshVillage();
+}
+function refreshVillage() {
+  var list = sourceList(cur).filter(function (x) { return !form.irpg || x.irpg === form.irpg; });
+  fillSelect($('fVillage'), uniqSorted(list.map(function (x) { return x.village; })), '— Village —', form.village);
+  form.village = $('fVillage').value;
+  refreshCodes();
+}
+function candidates() {
+  return sourceList(cur).filter(function (x) {
+    return (!form.irpg || x.irpg === form.irpg) && x.village === form.village;
+  });
+}
+function refreshCodes() {
+  var done = doneSet(cur);
+  var dl = $('codeList');
+  dl.innerHTML = form.village ? candidates().filter(function (x) { return !done.has(up(x.code)); }).map(function (x) {
+    return '<option value="' + esc(x.code) + '">' + esc(x.hus + (x.wife ? ' / ' + x.wife : '')) + '</option>';
+  }).join('') : '';
+  matchFarmer();
+}
+function matchFarmer() {
+  var v = up($('fCode').value);
+  form.code = v; form.farmer = null;
+  var box = $('farmerBox');
+  if (!form.village) { box.innerHTML = '<span class="none">ជ្រើសភូមិ រួចវាយ Family_ID</span>'; syncStatusField(); return; }
+  if (!v) { box.innerHTML = '<span class="none">វាយ Family_ID ដើម្បីបង្ហាញឈ្មោះ</span>'; syncStatusField(); return; }
+  var list = candidates();
+  var hit = list.filter(function (x) { return up(x.code) === v; })[0];
+  if (!hit && /^\d+$/.test(v)) {
+    var n = Number(v);
+    var m = list.filter(function (x) { var d = String(x.code).replace(/\D/g, ''); return d && Number(d) === n; });
+    if (m.length === 1) hit = m[0];
+  }
+  if (!hit) {
+    box.innerHTML = '<span class="bad">រកមិនឃើញក្នុងភូមិនេះ · Not found in this village</span>';
+    syncStatusField(); return;
+  }
+  form.farmer = hit;
+  var isDone = doneSet(cur).has(up(hit.code));
+  box.innerHTML = '<dl><dt>Family_ID</dt><dd>' + esc(hit.code) + '</dd>' +
+    '<dt>ប្តី Husband</dt><dd>' + esc(hit.hus || '-') + '</dd>' +
+    '<dt>ប្រពន្ធ Wife</dt><dd>' + esc(hit.wife || '-') + '</dd>' +
+    '<dt>ឆ្នាំចូលរួម Year</dt><dd>' + esc(hit.yearJoin || '-') + '</dd></dl>' +
+    (isDone ? '<div class="bad" style="margin-top:6px">បានកត់ត្រារួចហើយ · Already recorded</div>' : '');
+  syncStatusField();
+}
+function syncStatusField() {
+  // ICS-I: status chosen by inspector (pre-filled from the register); ICS-II/III: carried over
+  var sel = $('fStatus');
+  if (cur === 'ICS-I') {
+    if (form.farmer) { var s = matchStatus(form.farmer.status); if (s) { sel.value = s; } }
+    form.status = sel.value;
+  } else {
+    form.status = form.farmer ? form.farmer.status : '';
+  }
+}
+function updateNote() {
+  var show = cur === 'ICS-I' && (form.compliance === 'No' || form.compliance === 'Resign');
+  $('noteWrap').classList.toggle('hidden', !show);
+  $('extraWrap').classList.toggle('hidden', cur === 'ICS-I' && show);
+  if (cur === 'ICS-I' && show) form.extra = '';
+}
+function applySection() {
+  var s = SEC[cur];
+  document.documentElement.style.setProperty('--c', s.color);
+  $('themeColor').setAttribute('content', s.color);
+  document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.sec === cur ? 'true' : 'false'); });
+  $('formTitle').textContent = TITLES[cur];
+  $('statusWrap').classList.toggle('hidden', cur !== 'ICS-I');
+  $('extraLabel').innerHTML = s.extraName + ' <em>*</em>';
+
+  var st = sticky[cur] || {};
+  form = { date: st.date || today(), inspector: st.inspector || '', irpg: st.irpg || '', village: st.village || '',
+           code: '', farmer: null, status: '', compliance: '', extra: '', note: '' };
+  $('fDate').value = form.date;
+  $('fCode').value = '';
+  $('fNote').value = '';
+  $('fStatus').value = '';
+  fillInspectors();
+  mkSeg($('segCompl'), s.compl, 'compliance', updateNote);
+  mkSeg($('segExtra'), s.extraOpts, 'extra');
+  updateNote();
+  refreshIrpg();
+
+  dash = { irpg: '', village: '' };
+  renderDash();
+  renderQueue();
+}
+function rememberSticky() {
+  sticky[cur] = { date: form.date, inspector: form.inspector, irpg: form.irpg, village: form.village };
+  store.set('ics_sticky', sticky);
+}
+
+/* ---------- save offline ---------- */
+function saveOffline() {
+  var f = form, s = SEC[cur];
+  f.date = $('fDate').value; f.note = $('fNote').value.trim();
+  if (cur === 'ICS-I') f.status = $('fStatus').value;
+  var miss = [];
+  if (!f.date) miss.push('Date');
+  if (!f.inspector) miss.push('Inspector');
+  if (!f.irpg) miss.push('IRPG');
+  if (!f.village) miss.push('Village');
+  if (!f.farmer) miss.push('Family_ID');
+  if (cur === 'ICS-I' && !f.status) miss.push('Farmer Status');
+  if (!f.compliance) miss.push('Compliance');
+  var needExtra = cur !== 'ICS-I' || f.compliance === 'Yes';
+  if (needExtra && !f.extra) miss.push(s.extraName);
+  if (miss.length) { toast('សូមបំពេញ: ' + miss.join(', ')); return; }
+
+  if (doneSet(cur).has(up(f.farmer.code)) &&
+      !confirm('Family_ID ' + f.farmer.code + ' ត្រូវបានកត់ត្រារួចហើយ។ រក្សាទុកម្តងទៀត?')) return;
+
+  queue.push({
+    id: uid(), section: cur, savedAt: new Date().toISOString(),
+    inspector: f.inspector, date: f.date, irpg: f.farmer.irpg, village: f.farmer.village, code: f.farmer.code,
+    hus: f.farmer.hus, wife: f.farmer.wife, yearJoin: f.farmer.yearJoin,
+    status: f.status, compliance: f.compliance,
+    extra: needExtra ? f.extra : '', note: needExtra ? '' : f.note
+  });
+  store.set('ics_queue', queue);
+  rememberSticky();
+
+  // keep date/inspector/IRPG/village, clear the rest for the next farmer
+  $('fCode').value = ''; $('fNote').value = ''; $('fStatus').value = '';
+  form.code = ''; form.farmer = null; form.status = ''; form.compliance = ''; form.extra = ''; form.note = '';
+  mkSeg($('segCompl'), s.compl, 'compliance', updateNote);
+  mkSeg($('segExtra'), s.extraOpts, 'extra');
+  updateNote();
+  refreshCodes();
+  renderQueue(); renderDash();
+  toast('រក្សាទុកក្នុងទូរស័ព្ទរួចហើយ ✓');
+  $('fCode').focus();
+}
+
+/* ---------- queue + submit ---------- */
+function renderQueue() {
+  $('qCount').textContent = queue.length;
+  var box = $('qList');
+  if (!queue.length) { box.innerHTML = '<p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p>'; }
+  else {
+    box.innerHTML = queue.map(function (q) {
+      return '<div class="q-item"><div class="t"><b>' + esc(q.code) + '</b> ' + esc(q.hus) +
+        ' <span class="tag ' + esc(q.compliance) + '">' + esc(q.compliance) + '</span>' +
+        '<small>' + esc(q.section) + ' · ' + esc(q.village) + ' · ' + esc(q.date) + '</small></div>' +
+        '<button data-del="' + esc(q.id) + '" aria-label="Delete">&times;</button></div>';
+    }).join('');
+    box.querySelectorAll('[data-del]').forEach(function (b) {
+      b.onclick = function () {
+        if (!confirm('លុបទិន្នន័យនេះ?')) return;
+        queue = queue.filter(function (q) { return q.id !== b.dataset.del; });
+        store.set('ics_queue', queue); renderQueue(); refreshCodes(); renderDash();
+      };
+    });
+  }
+  updateNet();
+}
+function updateNet() {
+  var online = navigator.onLine;
+  var chip = $('netChip');
+  chip.textContent = online ? 'Online' : 'Offline';
+  chip.classList.toggle('off', !online);
+  var btn = $('submitBtn');
+  btn.textContent = 'Submit' + (queue.length ? ' (' + queue.length + ')' : '');
+  btn.disabled = !online || !queue.length || submitting;
+  var hint = $('submitHint');
+  if (!apiUrl) hint.textContent = 'មិនទាន់ដាក់ Web App URL — ចុចប៊ូតុង ⚙ ខាងលើ។';
+  else if (!online) hint.textContent = 'គ្មានអ៊ីនធឺណិត — ទិន្នន័យនៅរក្សាទុកក្នុងទូរស័ព្ទ។ ពេលមាន Internet ទើប Submit បាន។';
+  else if (queue.length) hint.textContent = 'មាន Internet ហើយ — ចុច Submit ដើម្បីផ្ញើចូល Google Sheet។';
+  else hint.textContent = '';
+}
+async function submitQueue() {
+  if (!queue.length || submitting) return;
+  if (!apiUrl) { setApi(); return; }
+  submitting = true; $('submitBtn').textContent = 'កំពុងផ្ញើ…'; $('submitBtn').disabled = true;
+  try {
+    var res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                    body: JSON.stringify({ records: queue }), redirect: 'follow' });
+    var j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Server error');
+    var ok = new Set((j.saved || []).concat(j.duplicates || []));
+    var n = (j.saved || []).length;
+    queue = queue.filter(function (q) { return !ok.has(q.id); });
+    store.set('ics_queue', queue);
+    toast('ផ្ញើបាន ' + n + ' កំណត់ត្រា ✓');
+    await sync(true);
+  } catch (e) {
+    toast('ផ្ញើមិនបាន — ទិន្នន័យនៅរក្សាទុកក្នុងទូរស័ព្ទ។ ' + (e.message || ''));
+  }
+  submitting = false; renderQueue(); refreshCodes(); renderDash();
+}
+
+/* ---------- sync from Google Sheet ---------- */
+async function sync(quiet) {
+  if (!apiUrl) { if (!quiet) setApi(); return; }
+  if (!navigator.onLine) { if (!quiet) toast('គ្មានអ៊ីនធឺណិត'); return; }
+  if (syncing) return;
+  syncing = true; $('syncBtn').style.opacity = .5;
+  try {
+    var res = await fetch(apiUrl + (apiUrl.indexOf('?') < 0 ? '?' : '&') + 'action=sync&t=' + Date.now(), { redirect: 'follow' });
+    var j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Server error');
+    data = { farmers: j.farmers || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], time: j.time };
+    store.set('ics_data', data);
+    showSyncInfo();
+    refreshIrpg(); renderDash();
+    if (!quiet) toast('ទាញទិន្នន័យថ្មីរួចហើយ ✓');
+  } catch (e) {
+    if (!quiet) toast('ទាញទិន្នន័យមិនបាន: ' + (e.message || ''));
+  }
+  syncing = false; $('syncBtn').style.opacity = 1;
+}
+function showSyncInfo() {
+  $('syncInfo').textContent = data.time
+    ? 'កសិករ ' + data.farmers.length + ' · ទាញចុងក្រោយ ' + new Date(data.time).toLocaleString()
+    : 'មិនទាន់ទាញទិន្នន័យ';
+}
+function setApi() {
+  var v = prompt('ដាក់ Web App URL (Apps Script, ចប់ដោយ /exec):', apiUrl || '');
+  if (v === null) return;
+  apiUrl = v.trim(); store.set('ics_api', apiUrl);
+  updateNet(); if (apiUrl) sync(false);
+}
+
+/* ---------- dashboard ---------- */
+function renderDash() {
+  var list = sourceList(cur), done = doneSet(cur);
+  fillSelect($('dIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), 'ទាំងអស់ All IRPG', dash.irpg);
+  dash.irpg = $('dIrpg').value;
+  var inIrpg = list.filter(function (x) { return !dash.irpg || x.irpg === dash.irpg; });
+  fillSelect($('dVillage'), uniqSorted(inIrpg.map(function (x) { return x.village; })), 'ទាំងអស់ All Village', dash.village);
+  dash.village = $('dVillage').value;
+
+  var f = inIrpg.filter(function (x) { return !dash.village || x.village === dash.village; });
+  var total = f.length;
+  var dn = f.filter(function (x) { return done.has(up(x.code)); }).length;
+  var left = total - dn, pct = total ? Math.round(dn * 100 / total) : 0;
+  $('dashTitle').textContent = 'របាយការណ៍ ' + cur + ' · Progress';
+  $('sTotal').textContent = total; $('sDone').textContent = dn; $('sLeft').textContent = left;
+  $('barFill').style.width = pct + '%'; $('pct').textContent = pct + '%';
+
+  var by = $('byVillage');
+  if (!dash.village && total) {
+    var g = {};
+    f.forEach(function (x) {
+      var k = x.irpg + '\u0000' + x.village;
+      g[k] = g[k] || { irpg: x.irpg, village: x.village, t: 0, d: 0 };
+      g[k].t++; if (done.has(up(x.code))) g[k].d++;
+    });
+    var rows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
+    by.innerHTML = '<table><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>សល់</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + r.t + '</td><td>' + r.d + '</td><td class="left">' + (r.t - r.d) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  } else if (!total) {
+    by.innerHTML = '<p class="hint">' + (cur === 'ICS-I' ? 'ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។'
+      : 'មិនទាន់មានកសិករ Compliance = Yes ក្នុង ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' ទេ។') + '</p>';
+  } else by.innerHTML = '';
+
+  var remaining = f.filter(function (x) { return !done.has(up(x.code)); });
+  var box = $('remBox');
+  if ((dash.irpg || dash.village) && remaining.length) {
+    box.classList.remove('hidden');
+    $('remList').innerHTML = remaining.slice(0, 300).map(function (x) {
+      return '<li><code>' + esc(x.code) + '</code>' + esc(x.hus) + (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') + '</li>';
+    }).join('');
+  } else box.classList.add('hidden');
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('.tab').forEach(function (t) {
+  t.onclick = function () { if (cur === t.dataset.sec) return; cur = t.dataset.sec; store.set('ics_sec', cur); applySection(); window.scrollTo(0, 0); };
+});
+$('fDate').onchange = function () { form.date = this.value; rememberSticky(); };
+$('fInspector').onchange = function () {
+  if (this.value === '__add') {
+    var n = (prompt('ឈ្មោះ Inspector:') || '').trim();
+    if (n && inspectors.indexOf(n) < 0) { inspectors.push(n); store.set('ics_inspectors', inspectors); }
+    form.inspector = n; fillInspectors();
+  } else form.inspector = this.value;
+  rememberSticky();
+};
+$('fIrpg').onchange = function () { form.irpg = this.value; form.village = ''; $('fCode').value = ''; refreshVillage(); rememberSticky(); };
+$('fVillage').onchange = function () { form.village = this.value; $('fCode').value = ''; refreshCodes(); rememberSticky(); };
+$('fCode').oninput = matchFarmer;
+$('fStatus').onchange = function () { form.status = this.value; };
+$('dIrpg').onchange = function () { dash.irpg = this.value; dash.village = ''; renderDash(); };
+$('dVillage').onchange = function () { dash.village = this.value; renderDash(); };
+$('saveBtn').onclick = saveOffline;
+$('submitBtn').onclick = submitQueue;
+$('syncBtn').onclick = function () { sync(false); };
+$('cfgBtn').onclick = setApi;
+window.addEventListener('online', function () { updateNet(); sync(true); });
+window.addEventListener('offline', updateNet);
+
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(function () {});
+}
+
+showSyncInfo();
+applySection();
+if (!apiUrl) toast('ដាក់ Web App URL ក្នុង ⚙ ជាមុនសិន');
+else sync(true);
+})();
+</script>
+</body>
+</html>
