@@ -34,7 +34,10 @@ header{background:var(--c);color:#fff;padding:calc(10px + env(safe-area-inset-to
 .tabs{display:flex;gap:6px;margin-top:10px}
 .tab{flex:1;border:0;background:var(--t);color:#fff;padding:8px 4px 7px;border-radius:10px 10px 0 0;
   font:inherit;cursor:pointer;line-height:1.25;border-bottom:4px solid var(--t)}
+.tab{position:relative}
 .tab b{display:block;font-size:17px}
+.bdg{position:absolute;top:4px;right:6px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#fff;color:var(--t);font:700 13px/22px inherit;font-style:normal;text-align:center}
+.tab[aria-selected=true] .bdg{background:var(--t);color:#fff}
 .tab span{font-size:13px;opacity:1}
 .tab[aria-selected=true]{background:var(--bg);color:var(--t);border-bottom-color:var(--bg);font-weight:700}
 .tab:not([aria-selected=true]){border-bottom-color:var(--t);background:var(--t);}
@@ -72,7 +75,7 @@ input[readonly]{background:var(--c-soft)}
 .q-item .t small{display:block;color:var(--muted);font-size:14px}
 .q-item button{border:0;background:none;color:var(--no);font-size:20px;min-width:36px;min-height:36px;cursor:pointer}
 .tag{font-size:13px;border-radius:5px;padding:1px 6px;color:#fff;margin-left:6px}
-.tag.Yes{background:var(--yes)}.tag.No{background:var(--no)}.tag.Resign{background:var(--resign)}
+.tag.Yes{background:var(--yes)}.tag.No{background:var(--no)}.tag.Resign{background:var(--resign)}.tag.Fallow{background:var(--fallow)}.tag.info{background:#5d6b62}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stat{background:var(--c-soft);border-radius:8px;padding:8px 6px;text-align:center}
 .stat b{display:block;font-size:26px;line-height:1.1;color:var(--c)}
@@ -121,9 +124,9 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
     </div>
   </div>
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" data-sec="ICS-I"  style="--t:#256b30"><b>ICS-I</b><span>ដាំស្រូវ · Rice planting</span></button>
-    <button class="tab" role="tab" data-sec="ICS-II" style="--t:#a85f00"><b>ICS-II</b><span>បោកស្រូវ · Threshing</span></button>
-    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f"><b>ICS-III</b><span>ក្រោយប្រមូលផល · Burn check</span></button>
+    <button class="tab" role="tab" data-sec="ICS-I"  style="--t:#256b30"><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ · Rice planting</span></button>
+    <button class="tab" role="tab" data-sec="ICS-II" style="--t:#a85f00"><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ · Threshing</span></button>
+    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f"><b>ICS-III</b><em class="bdg hidden" id="bdg-ICS-III"></em><span>ក្រោយប្រមូលផល · Burn check</span></button>
   </div>
 </header>
 
@@ -249,6 +252,7 @@ const TITLES = {
   'ICS-II': 'ICS-II · កត់ត្រាការបោកស្រូវ Threshing record',
   'ICS-III': 'ICS-III · ក្រោយប្រមូលផល Post harvest / Burn check'
 };
+const PREV_LABEL = { 'ICS-II': 'Planting', 'ICS-III': 'Threshing' };
 const STATUSES = ['Existing farmer', 'Rejoin', 'New farmer'];
 
 const $ = function (id) { return document.getElementById(id); };
@@ -310,7 +314,7 @@ function sourceList(sec) {
   }
   var prev = sec === 'ICS-II' ? data.ics1 : data.ics2;
   return latestBy(prev.filter(function (r) { return r.compliance === 'Yes'; })).map(function (r) {
-    return { irpg: r.irpg, village: r.village, code: r.code, hus: r.hus, wife: r.wife, yearJoin: r.yearJoin, status: r.status };
+    return { irpg: r.irpg, village: r.village, code: r.code, hus: r.hus, wife: r.wife, yearJoin: r.yearJoin, status: r.status, prev: r.extra };
   });
 }
 function doneSet(sec) {
@@ -400,7 +404,8 @@ function matchFarmer() {
   box.innerHTML = '<dl><dt>Family_ID</dt><dd>' + esc(hit.code) + '</dd>' +
     '<dt>ប្តី Husband</dt><dd>' + esc(hit.hus || '-') + '</dd>' +
     '<dt>ប្រពន្ធ Wife</dt><dd>' + esc(hit.wife || '-') + '</dd>' +
-    '<dt>ឆ្នាំចូលរួម Year</dt><dd>' + esc(hit.yearJoin || '-') + '</dd></dl>' +
+    '<dt>ឆ្នាំចូលរួម Year</dt><dd>' + esc(hit.yearJoin || '-') + '</dd>' +
+    (PREV_LABEL[cur] ? '<dt>' + PREV_LABEL[cur] + '</dt><dd><span class="tag ' + esc(hit.prev) + '" style="margin:0">' + esc(hit.prev || '-') + '</span></dd>' : '') + '</dl>' +
     (isDone ? '<div class="bad" style="margin-top:6px">បានកត់ត្រារួចហើយ · Already recorded</div>' : '');
   syncStatusField();
 }
@@ -494,12 +499,18 @@ function saveOffline() {
 }
 
 /* ---------- queue + submit ---------- */
+function qMine() { return queue.filter(function (q) { return q.section === cur; }); }
 function renderQueue() {
-  $('qCount').textContent = queue.length;
+  var mine = qMine();
+  $('qCount').textContent = mine.length;
+  Object.keys(SEC).forEach(function (s) {
+    var n = queue.filter(function (q) { return q.section === s; }).length, b = $('bdg-' + s);
+    b.textContent = n; b.classList.toggle('hidden', !n);
+  });
   var box = $('qList');
-  if (!queue.length) { box.innerHTML = '<p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p>'; }
+  if (!mine.length) { box.innerHTML = '<p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p>'; }
   else {
-    box.innerHTML = queue.map(function (q) {
+    box.innerHTML = mine.map(function (q) {
       return '<div class="q-item"><div class="t"><b>' + esc(q.code) + '</b> ' + esc(q.hus) +
         ' <span class="tag ' + esc(q.compliance) + '">' + esc(q.compliance) + '</span>' +
         '<small>' + esc(q.section) + ' · ' + esc(q.village) + ' · ' + esc(q.date) + '</small></div>' +
@@ -521,21 +532,23 @@ function updateNet() {
   chip.textContent = online ? 'Online' : 'Offline';
   chip.classList.toggle('off', !online);
   var btn = $('submitBtn');
-  btn.textContent = 'Submit' + (queue.length ? ' (' + queue.length + ')' : '');
-  btn.disabled = !online || !queue.length || submitting;
+  var n = qMine().length;
+  btn.textContent = 'Submit ' + cur + (n ? ' (' + n + ')' : '');
+  btn.disabled = !online || !n || submitting;
   var hint = $('submitHint');
   if (!apiUrl) hint.textContent = 'មិនទាន់ដាក់ Web App URL — ចុចប៊ូតុង ⚙ ខាងលើ។';
   else if (!online) hint.textContent = 'គ្មានអ៊ីនធឺណិត — ទិន្នន័យនៅរក្សាទុកក្នុងទូរស័ព្ទ។ ពេលមាន Internet ទើប Submit បាន។';
-  else if (queue.length) hint.textContent = 'មាន Internet ហើយ — ចុច Submit ដើម្បីផ្ញើចូល Google Sheet។';
+  else if (n) hint.textContent = 'មាន Internet ហើយ — ចុច Submit ដើម្បីផ្ញើចូល Google Sheet។';
   else hint.textContent = '';
 }
 async function submitQueue() {
-  if (!queue.length || submitting) return;
+  var batch = qMine();
+  if (!batch.length || submitting) return;
   if (!apiUrl) { setApi(); return; }
   submitting = true; $('submitBtn').textContent = 'កំពុងផ្ញើ…'; $('submitBtn').disabled = true;
   try {
     var res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                                    body: JSON.stringify({ records: queue }), redirect: 'follow' });
+                                    body: JSON.stringify({ records: batch }), redirect: 'follow' });
     var j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Server error');
     var ok = new Set((j.saved || []).concat(j.duplicates || []));
@@ -658,7 +671,8 @@ function renderDetail(list, done) {
     var r = info[up(x.code)], sub = '';
     if (r) sub = '<small>' + esc(r.inspector || '') + (r.date ? ' · ' + esc(r.date) : '') +
       (r.compliance ? ' · ' + esc(r.compliance) : '') + (r.pending ? ' · រង់ចាំផ្ញើ' : '') + '</small>';
-    out += '<li><code>' + esc(x.code) + '</code>' + esc(x.hus) + (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') + sub + '</li>';
+    var pv = PREV_LABEL[cur] ? ' <span class="tag ' + (['Yes', 'No', 'Fallow'].indexOf(x.prev) >= 0 ? esc(x.prev) : 'info') + '">' + PREV_LABEL[cur] + ': ' + esc(x.prev || '-') + '</span>' : '';
+    out += '<li><code>' + esc(x.code) + '</code>' + esc(x.hus) + (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') + pv + sub + '</li>';
   });
   if (items.length > 600) out += '<li>… និង ' + (items.length - 600) + ' ទៀត (ជ្រើស Village ដើម្បីបង្រួម)</li>';
   $('dList').innerHTML = out || '<li>មិនមានឈ្មោះទេ។</li>';
