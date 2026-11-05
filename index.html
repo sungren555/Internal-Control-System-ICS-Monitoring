@@ -13,127 +13,189 @@
 <meta name="apple-mobile-web-app-title" content="ICS Monitor">
 <style>
 :root{
-  --ink:#0f1a13; --muted:#34423a; --line:#9aa79e; --bg:#f4f6f2; --card:#ffffff;
+  --ink:#0e1812; --muted:#3b4940; --line:#cfd6cc; --bg:#eceFe9; --card:#fff; --field:#f3f5f1;
   --yes:#256b30; --no:#b3261e; --resign:#3b4046; --fallow:#a85f00;
-  --c:#256b30; --c-soft:color-mix(in srgb,var(--c) 11%,#fff); --c-line:color-mix(in srgb,var(--c) 35%,#fff);
-  --r:10px;
+  --c:#256b30;
+  --c-dark:color-mix(in srgb,var(--c) 78%,#000);
+  --c-soft:color-mix(in srgb,var(--c) 9%,#fff);
+  --c-line:color-mix(in srgb,var(--c) 30%,#fff);
+  --shadow:0 1px 2px rgba(14,24,18,.06),0 8px 24px rgba(14,24,18,.06);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);
-  font:17px/1.55 "Noto Sans Khmer","Khmer OS Battambang","Khmer UI",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
-header{background:var(--c);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 0;position:sticky;top:0;z-index:5}
-.top{display:flex;align-items:center;gap:10px;justify-content:space-between}
-.top h1{font-size:18px;margin:0;font-weight:700;line-height:1.25}
-.top small{display:block;font-weight:500;opacity:1;font-size:13.5px}
-.chips{display:flex;gap:6px;align-items:center}
-.chip{font-size:14px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.25);white-space:nowrap}
-.chip.off{background:#fff;color:var(--no);font-weight:700}
-.iconbtn{background:rgba(0,0,0,.25);border:0;color:#fff;border-radius:8px;width:38px;height:38px;font-size:19px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
-.tabs{display:flex;gap:6px;margin-top:10px}
-.tab{flex:1;border:0;background:var(--t);color:#fff;padding:8px 4px 7px;border-radius:10px 10px 0 0;
-  font:inherit;cursor:pointer;line-height:1.25;border-bottom:4px solid var(--t)}
-.tab{position:relative}
-.tab b{display:block;font-size:17px}
-.bdg{position:absolute;top:4px;right:6px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#fff;color:var(--t);font:700 13px/22px inherit;font-style:normal;text-align:center}
+  font:16.5px/1.55 "Noto Sans Khmer","Khmer OS Battambang","Khmer UI",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+.hidden{display:none!important}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:10;color:#fff;
+  background:linear-gradient(180deg,var(--c) 0%,var(--c-dark) 100%);
+  padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.hwrap{max-width:1080px;margin:0 auto}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:40px;height:40px;border-radius:11px;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+.brand h1{margin:0;font-size:18px;line-height:1.2;font-weight:700;letter-spacing:.2px}
+.brand small{display:block;font-size:13px;font-weight:500;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.acts{display:flex;align-items:center;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:#7CFC9A}
+.chip.off{background:#fff;color:var(--no);border-color:#fff}
+.chip.off::before{background:var(--no)}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.14);color:#fff;cursor:pointer;text-decoration:none}
+.iconbtn:hover{background:rgba(255,255,255,.24)}
+
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.tab{position:relative;border:0;background:var(--t);color:#fff;padding:10px 6px 9px;border-radius:14px 14px 0 0;
+  font:inherit;cursor:pointer;line-height:1.25;text-align:center;opacity:.92}
+.tab b{display:block;font-size:17px;letter-spacing:.3px}
+.tab span{display:block;font-size:12.5px;opacity:.95}
+.tab[aria-selected=true]{background:var(--bg);color:var(--t);opacity:1;box-shadow:0 -3px 10px rgba(0,0,0,.12)}
+.tab[aria-selected=true] span{opacity:1;font-weight:600}
+.bdg{position:absolute;top:5px;right:7px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#fff;color:var(--t);
+  font:700 13px/22px system-ui,sans-serif;font-style:normal;text-align:center}
 .tab[aria-selected=true] .bdg{background:var(--t);color:#fff}
-.tab span{font-size:13px;opacity:1}
-.tab[aria-selected=true]{background:var(--bg);color:var(--t);border-bottom-color:var(--bg);font-weight:700}
-.tab:not([aria-selected=true]){border-bottom-color:var(--t);background:var(--t);}
-main{max-width:640px;margin:0 auto;padding:14px}
-.card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:var(--r);padding:14px;margin-bottom:14px}
-.card h2{font-size:18px;margin:0 0 10px;color:var(--c)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{display:block;font-size:15px;font-weight:600;color:var(--ink);margin:12px 0 5px}
+
+/* ---------- layout ---------- */
+main{max-width:1080px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+@media (min-width:900px){
+  main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:auto 1fr}
+  #formCard{grid-row:span 2}
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;margin:0 0 4px}
+.card-h .pill{width:6px;align-self:stretch;border-radius:6px;background:var(--c)}
+.card h2{font-size:19px;margin:0;color:var(--ink);line-height:1.3}
+.card h2 small{display:block;font-size:14px;font-weight:500;color:var(--muted)}
+
+/* ---------- form ---------- */
+.grp{display:flex;align-items:center;gap:10px;margin:20px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
+.grp:first-of-type{margin-top:12px}
+.grp .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;font-size:14px}
+.grp small{font-weight:500;color:var(--muted);font-size:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:14.5px;font-weight:600;color:var(--ink);margin:12px 0 6px}
 label em{font-style:normal;color:var(--no)}
-select,input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:8px;padding:10px 10px;min-height:50px;font-weight:500}
-select:focus,input:focus,textarea:focus,button:focus-visible{outline:3px solid var(--c-line);border-color:var(--c)}
-input[readonly]{background:var(--c-soft)}
-.farmer{background:var(--c-soft);border:2px solid var(--c-line);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:17px}
+select,input,textarea{width:100%;font:inherit;font-weight:500;color:var(--ink);background:var(--field);border:1.5px solid #c3cbc0;border-radius:12px;padding:10px 12px;min-height:52px}
+select{appearance:none;-webkit-appearance:none;padding-right:40px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23283' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+input::placeholder,textarea::placeholder{color:#66726a;font-weight:400}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--c);background:#fff;box-shadow:0 0 0 4px var(--c-line)}
+button:focus-visible,a:focus-visible{outline:3px solid var(--c-line);outline-offset:2px}
+
+.farmer{background:var(--c-soft);border:1px solid var(--c-line);border-left:6px solid var(--c);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:16.5px}
 .farmer .none{color:var(--muted)}
-.farmer .bad{color:var(--no);font-weight:600}
-.farmer dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
-.farmer dt{color:var(--muted);font-size:14.5px}
+.farmer .bad{color:var(--no);font-weight:700}
+.farmer dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;align-items:baseline}
+.farmer dt{color:var(--muted);font-size:14px}
 .farmer dd{margin:0;font-weight:700;color:var(--ink)}
-.seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{flex:1;min-width:84px;min-height:50px;border:2px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-weight:700;font-size:17px;color:var(--ink);cursor:pointer}
-.seg button.on{color:#fff;border-color:transparent}
+
+.seg{display:flex;gap:4px;padding:4px;background:#e3e8e0;border-radius:14px}
+.seg button{flex:1;min-height:48px;border:0;background:transparent;border-radius:10px;font:inherit;font-weight:700;font-size:16.5px;color:var(--ink);cursor:pointer}
+.seg button.on{color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.22)}
 .seg button.on[data-v=Yes]{background:var(--yes)}
 .seg button.on[data-v=No]{background:var(--no)}
 .seg button.on[data-v=Resign]{background:var(--resign)}
 .seg button.on[data-v=Fallow]{background:var(--fallow)}
-.btns{display:grid;gap:10px;margin-top:16px}
-.btn{min-height:50px;border-radius:10px;border:0;font:inherit;font-weight:700;font-size:16px;cursor:pointer;padding:0 14px}
-.btn.primary{background:var(--c);color:#fff}
-.btn.ghost{background:#fff;color:var(--c);border:3px solid var(--c)}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.hint{font-size:14.5px;color:var(--muted);margin:8px 0 0}
-.q-item{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 0;font-size:16px}
-.q-item:first-of-type{border-top:0}
-.q-item .t{flex:1}
+
+.btns{display:grid;gap:10px;margin-top:20px}
+.btn{min-height:54px;border-radius:14px;border:0;font:inherit;font-weight:700;font-size:17px;cursor:pointer;padding:0 16px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn.primary{background:var(--c);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--c) 40%,transparent)}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+.btn:disabled{background:#d5dad3;color:#5b665f;box-shadow:none;cursor:not-allowed}
+.hint{font-size:14.5px;color:var(--muted);margin:10px 0 0}
+
+/* ---------- queue ---------- */
+.q-item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--field);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:16px}
+.q-item .t{flex:1;min-width:0}
 .q-item .t small{display:block;color:var(--muted);font-size:14px}
-.q-item button{border:0;background:none;color:var(--no);font-size:20px;min-width:36px;min-height:36px;cursor:pointer}
-.tag{font-size:13px;border-radius:5px;padding:1px 6px;color:#fff;margin-left:6px}
-.tag.Yes{background:var(--yes)}.tag.No{background:var(--no)}.tag.Resign{background:var(--resign)}.tag.Fallow{background:var(--fallow)}.tag.info{background:#5d6b62}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
-.stat{background:var(--c-soft);border-radius:8px;padding:8px 6px;text-align:center}
-.stat b{display:block;font-size:26px;line-height:1.1;color:var(--c)}
-.stat span{font-size:14px;color:var(--muted)}
-.bar{height:12px;background:#e4e9e1;border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--c);border-radius:99px;transition:width .3s}
-.pct{font-size:15px;color:var(--muted);margin:4px 0 0;text-align:right}
+.q-item button{border:0;background:#fff;color:var(--no);border:1px solid var(--line);border-radius:10px;font-size:20px;min-width:40px;min-height:40px;cursor:pointer}
+.tag{display:inline-block;font-size:13px;font-weight:700;border-radius:99px;padding:1px 9px;color:#fff;margin-left:6px;vertical-align:1px}
+.tag.Yes{background:var(--yes)}.tag.No{background:var(--no)}.tag.Resign{background:var(--resign)}.tag.Fallow{background:var(--fallow)}.tag.info{background:#5b665f}
+
+/* ---------- dashboard ---------- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 12px}
+.stat{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 6px 8px;text-align:center;font:inherit;color:inherit;cursor:pointer}
+.stat b{display:block;font-size:30px;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span{font-size:14px;color:var(--muted);font-weight:600}
+.stat[data-k=total] b{color:var(--ink)}
+.stat[data-k=done] b{color:var(--c)}
+.stat[data-k=left] b{color:#9a3412}
+.stat.sel{background:var(--c);border-color:var(--c)}
+.stat.sel b,.stat.sel span{color:#fff}
+.bar-t{height:12px;background:#dfe5dc;border-radius:99px;overflow:hidden}
+.bar-t i{display:block;height:100%;background:linear-gradient(90deg,var(--c),var(--c-dark));border-radius:99px;transition:width .35s}
+.pct{font-size:15px;font-weight:700;color:var(--c);margin:6px 0 0;text-align:right}
 table{width:100%;border-collapse:collapse;font-size:16px;margin-top:10px}
-th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+th,td{padding:8px 4px;border-bottom:1px solid #e1e6de;text-align:right}
 th:first-child,td:first-child{text-align:left}
-th{font-size:14px;color:var(--muted);font-weight:700}
-td.left{font-weight:700;color:var(--c)}
-button.num{font:inherit;font-weight:700;color:var(--c);background:none;border:0;border-bottom:2px solid var(--c);padding:2px 6px;min-width:44px;min-height:38px;cursor:pointer;border-radius:4px}
-button.num.zero{color:var(--muted);border-bottom-color:transparent;cursor:default}
-button.stat{border:2px solid transparent;font:inherit;color:inherit;cursor:pointer}
-button.stat.sel,button.num.sel{background:var(--c);color:#fff}
-.detail{margin-top:14px;border:2px solid var(--c);border-radius:10px;overflow:hidden}
-.detail .dh{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--c);color:#fff;padding:8px 12px}
+th{font-size:14px;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)}
+td:first-child{font-weight:600}
+button.num{font:inherit;font-weight:700;font-variant-numeric:tabular-nums;color:var(--c);background:var(--c-soft);border:0;border-radius:99px;padding:2px 10px;min-width:48px;min-height:38px;cursor:pointer}
+td.left button.num{color:#9a3412;background:#fdf0e6}
+button.num.zero{color:#6b766e;background:transparent;cursor:default}
+button.num.sel{background:var(--c);color:#fff}
+.detail{margin-top:16px;border:1px solid var(--c);border-radius:14px;overflow:hidden;scroll-margin-top:160px}
+.detail .dh{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--c);color:#fff;padding:8px 8px 8px 14px}
 .detail .dh b{font-size:16px}
-.detail .dh button{background:rgba(0,0,0,.25);border:0;color:#fff;border-radius:8px;min-width:40px;min-height:40px;font-size:18px;cursor:pointer}
-.detail ul{max-height:420px;overflow:auto;padding:4px 12px}
-.rem small{display:block;color:var(--muted);font-size:14px}
-.rem .vil{font-weight:700;color:var(--c);border-bottom:2px solid var(--c-line);padding-top:10px}
-details{margin-top:10px}
-summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:flex;align-items:center}
+.detail .dh button{background:rgba(0,0,0,.22);border:0;color:#fff;border-radius:10px;min-width:42px;min-height:42px;font-size:20px;cursor:pointer}
+.detail ul{max-height:440px;overflow:auto;padding:4px 14px}
 .rem{font-size:16px;margin:0;padding:0;list-style:none}
-.rem li{padding:5px 0;border-bottom:1px dashed var(--line)}
-.rem code{font-weight:700;margin-right:6px}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1c2a21;color:#fff;
-  padding:10px 16px;border-radius:10px;font-size:14px;max-width:90%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;text-align:center}
+.rem li{padding:8px 0;border-bottom:1px dashed #cfd6cc}
+.rem code{font-weight:700;background:var(--c-soft);color:var(--c);border-radius:6px;padding:1px 8px;margin-right:8px;font-family:inherit}
+.rem small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+.rem .vil{font-weight:700;color:var(--c);border-bottom:2px solid var(--c-line);padding-top:12px}
+
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:12px 18px;border-radius:14px;font-size:15px;max-width:92%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.show{opacity:1}
-.hidden{display:none!important}
+@media (max-width:560px){
+  #sheetBtn{display:none}
+  .iconbtn{width:38px;height:38px}
+  .chip{padding:4px 9px;font-size:13px}
+  .brand h1{font-size:17px}
+  .brand small{max-width:44vw}
+  .logo{width:36px;height:36px}
+}
+@media (max-width:380px){ .brand small{max-width:34vw} .tab span{font-size:11.5px} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="top">
-    <h1>Internal Control System (ICS) Monitoring<small id="syncInfo">មិនទាន់ទាញទិន្នន័យ</small></h1>
-    <div class="chips">
+ <div class="hwrap">
+  <div class="bar">
+    <div class="brand">
+      <img class="logo" src="icons/icon-192.png" alt="">
+      <div><h1>ICS Monitoring</h1><small id="syncInfo">មិនទាន់ទាញទិន្នន័យ</small></div>
+    </div>
+    <div class="acts">
       <span class="chip" id="netChip">Online</span>
-      <a class="iconbtn" id="sheetBtn" target="_blank" rel="noopener" title="Open Google Sheet" aria-label="Open Google Sheet">&#9638;</a>
-      <button class="iconbtn" id="syncBtn" title="Refresh farmers" aria-label="Refresh farmers">&#8635;</button>
-      <button class="iconbtn" id="cfgBtn" title="Settings" aria-label="Settings">&#9881;</button>
+      <a class="iconbtn" id="sheetBtn" target="_blank" rel="noopener" title="Open Google Sheet" aria-label="Open Google Sheet"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></a>
+      <button class="iconbtn" id="syncBtn" title="Refresh farmers" aria-label="Refresh farmers"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></button>
+      <button class="iconbtn" id="cfgBtn" title="Settings" aria-label="Settings"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
     </div>
   </div>
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" data-sec="ICS-I"  style="--t:#256b30"><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ · Rice planting</span></button>
-    <button class="tab" role="tab" data-sec="ICS-II" style="--t:#a85f00"><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ · Threshing</span></button>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-sec="ICS-I"   style="--t:#256b30"><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ · Planting</span></button>
+    <button class="tab" role="tab" data-sec="ICS-II"  style="--t:#a85f00"><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ · Threshing</span></button>
     <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f"><b>ICS-III</b><em class="bdg hidden" id="bdg-ICS-III"></em><span>ក្រោយប្រមូលផល · Burn check</span></button>
-  </div>
+  </nav>
+ </div>
 </header>
 
 <main>
   <section class="card" id="formCard">
-    <h2 id="formTitle">ICS-I</h2>
+    <div class="card-h"><span class="pill"></span><h2 id="formTitle">ICS-I</h2></div>
 
+    <div class="grp"><span class="n">1</span>ពេលវេលា និងទីតាំង <small>When &amp; where</small></div>
     <div class="row">
       <div>
         <label for="fDate">កាលបរិច្ឆេទ Date <em>*</em></label>
@@ -144,7 +206,6 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
         <select id="fInspector"></select>
       </div>
     </div>
-
     <div class="row">
       <div>
         <label for="fIrpg">ក្រុមផលិត IRPG <em>*</em></label>
@@ -156,10 +217,10 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
       </div>
     </div>
 
-    <label for="fCode">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
+    <div class="grp"><span class="n">2</span>កសិករ <small>Farmer</small></div>
+    <label for="fCode" style="margin-top:6px">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
     <input id="fCode" list="codeList" autocomplete="off" autocapitalize="characters" placeholder="ឧ. BM001 ឬ 1">
     <datalist id="codeList"></datalist>
-
     <div class="farmer" id="farmerBox"><span class="none">ជ្រើសភូមិ រួចវាយ Family_ID</span></div>
 
     <div id="statusWrap">
@@ -172,7 +233,8 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
       </select>
     </div>
 
-    <label>Compliance <em>*</em></label>
+    <div class="grp"><span class="n">3</span>លទ្ធផលត្រួតពិនិត្យ <small>Inspection result</small></div>
+    <label style="margin-top:6px">Compliance <em>*</em></label>
     <div class="seg" id="segCompl"></div>
 
     <div id="extraWrap">
@@ -186,22 +248,22 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
     </div>
 
     <div class="btns">
-      <button class="btn ghost" id="saveBtn">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button>
+      <button class="btn primary" id="saveBtn">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button>
     </div>
     <p class="hint">ទិន្នន័យនៅក្នុងទូរស័ព្ទសិន។ ពេលមានអ៊ីនធឺណិត ទើបចុច Submit។</p>
   </section>
 
   <section class="card" id="queueCard">
-    <h2>រង់ចាំផ្ញើ · Waiting to submit (<span id="qCount">0</span>)</h2>
+    <div class="card-h"><span class="pill"></span><h2>រង់ចាំផ្ញើ <small>Waiting to submit (<span id="qCount">0</span>)</small></h2></div>
     <div id="qList"><p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p></div>
     <div class="btns">
-      <button class="btn primary" id="submitBtn" disabled>Submit</button>
+      <button class="btn dark" id="submitBtn" disabled>Submit</button>
     </div>
     <p class="hint" id="submitHint"></p>
   </section>
 
   <section class="card" id="dashCard">
-    <h2 id="dashTitle">របាយការណ៍ Progress</h2>
+    <div class="card-h"><span class="pill"></span><h2 id="dashTitle">របាយការណ៍ Progress</h2></div>
     <div class="row">
       <div>
         <label for="dIrpg">IRPG</label>
@@ -217,7 +279,7 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
       <button class="stat" data-k="done"><b id="sDone">0</b><span>ធ្វើបាន Done</span></button>
       <button class="stat" data-k="left"><b id="sLeft">0</b><span>នៅសល់ Left</span></button>
     </div>
-    <div class="bar"><i id="barFill" style="width:0%"></i></div>
+    <div class="bar-t"><i id="barFill" style="width:0%"></i></div>
     <p class="pct" id="pct">0%</p>
     <p class="hint" id="tapHint">ចុចលើលេខ ដើម្បីមើលឈ្មោះកសិករ។</p>
     <div id="byVillage"></div>
@@ -225,8 +287,9 @@ summary{cursor:pointer;font-weight:600;color:var(--c);min-height:36px;display:fl
       <div class="dh"><b id="dTitle"></b><button id="dClose" aria-label="Close">&times;</button></div>
       <ul class="rem" id="dList"></ul>
     </div>
-    <a class="btn ghost" id="sheetLink" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:14px">មើលព័ត៌មានលម្អិតក្នុង Google Sheet</a>
-
+    <div class="btns">
+      <a class="btn ghost" id="sheetLink" target="_blank" rel="noopener">មើលព័ត៌មានលម្អិតក្នុង Google Sheet</a>
+    </div>
   </section>
 </main>
 
@@ -428,6 +491,7 @@ function updateNote() {
 function applySection() {
   var s = SEC[cur];
   document.documentElement.style.setProperty('--c', s.color);
+  document.documentElement.dataset.sec = cur;
   $('themeColor').setAttribute('content', s.color);
   document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.sec === cur ? 'true' : 'false'); });
   $('formTitle').textContent = TITLES[cur];
@@ -598,10 +662,10 @@ function setApi() {
 /* ---------- dashboard ---------- */
 function renderDash() {
   var list = sourceList(cur), done = doneSet(cur);
-  fillSelect($('dIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), 'ទាំងអស់ All IRPG', dash.irpg);
+  fillSelect($('dIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), 'ទាំងអស់ · All', dash.irpg);
   dash.irpg = $('dIrpg').value;
   var inIrpg = list.filter(function (x) { return !dash.irpg || x.irpg === dash.irpg; });
-  fillSelect($('dVillage'), uniqSorted(inIrpg.map(function (x) { return x.village; })), 'ទាំងអស់ All Village', dash.village);
+  fillSelect($('dVillage'), uniqSorted(inIrpg.map(function (x) { return x.village; })), 'ទាំងអស់ · All', dash.village);
   dash.village = $('dVillage').value;
 
   var f = inIrpg.filter(function (x) { return !dash.village || x.village === dash.village; });
