@@ -140,6 +140,11 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--c-line);outline-off
 .stat[data-k=total] b{color:var(--ink)}
 .stat[data-k=done] b{color:var(--ct)}
 .stat[data-k=left] b{color:var(--left-fg)}
+.stat[data-k=yes] b,.stat[data-fk=yes] b,.stat[data-fk=elig] b{color:var(--ct)}
+.stat[data-k=no] b,.stat[data-fk=no] b{color:var(--no-t)}
+.stat[data-k=resign] b,.stat[data-fk=resign] b{color:var(--ink)}
+.stat[data-fk=left] b{color:var(--left-fg)}
+.stats.s2{margin-top:0}
 .stat.sel{background:var(--c);border-color:var(--ct)}
 .stat.sel b,.stat.sel span{color:#fff}
 .bar-t{height:12px;background:var(--track);border-radius:99px;overflow:hidden}
@@ -165,6 +170,26 @@ button.num.sel{background:var(--c);color:#fff}
 .rem small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
 .rem .vil{font-weight:700;color:var(--ct);border-bottom:2px solid var(--c-line);padding-top:12px}
 
+input[type=search]{-webkit-appearance:none;appearance:none}
+.sres{margin-top:8px;border:1.5px solid var(--c-line);border-radius:14px;overflow:hidden;background:var(--card)}
+.sr{display:flex;width:100%;gap:10px;align-items:center;justify-content:space-between;text-align:left;border:0;border-bottom:1px solid var(--line2);
+  background:transparent;padding:10px 12px;font:inherit;color:var(--ink);cursor:pointer;min-height:58px}
+.sr:last-child{border-bottom:0}
+.sr:hover,.sr:focus-visible{background:var(--c-soft)}
+.sr .n{min-width:0;flex:1}
+.sr small{display:block;color:var(--muted);font-size:14px;margin-top:1px}
+.sr .tag{margin:0;white-space:nowrap;flex:none}
+.sr-note{padding:10px 12px;font-size:14.5px;color:var(--muted)}
+.sr.st{cursor:default;display:block}
+.sr.st:hover{background:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chips .tag{margin:0;font-size:12.5px}
+.srch-l{margin-top:10px}
+.srch-l small{font-weight:500;color:var(--muted)}
+table.t5{font-size:15px}
+table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
+table.t5 th,table.t5 td{padding:7px 2px}
+table.t5 button.num{min-width:36px;padding:2px 6px}
 header select.yearsel{width:auto;min-height:40px;height:40px;padding:0 30px 0 12px;border-radius:12px;font-weight:700;font-size:15px;
   color:#fff;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -246,7 +271,10 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
     </div>
 
     <div class="grp"><span class="n">2</span>កសិករ <small>Farmer</small></div>
-    <label for="fCode" style="margin-top:6px">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
+    <label for="fSearch" style="margin-top:6px">ស្វែងរកកសិករ Search <small style="font-weight:500;color:var(--muted)">ID · ឈ្មោះប្តី · ឈ្មោះប្រពន្ធ</small></label>
+    <input id="fSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ…">
+    <div class="sres hidden" id="searchRes"></div>
+    <label for="fCode">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
     <input id="fCode" list="codeList" autocomplete="off" autocapitalize="characters" placeholder="ឧ. BM001 ឬ 1">
     <datalist id="codeList"></datalist>
     <div class="farmer" id="farmerBox"><span class="none">ជ្រើសភូមិ រួចវាយ Family_ID</span></div>
@@ -285,16 +313,25 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
   <!-- ===== Farmers_List dashboard ===== -->
   <section class="card hidden" id="flDash">
     <div class="card-h"><span class="pill"></span><h2>Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2></div>
+    <label for="fdSearch" class="srch-l">ស្វែងរកកសិករ Search <small>ID · Hus_Eng · Wif_Eng</small></label>
+    <input id="fdSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ… ដើម្បីមើលថាធ្វើរួចឬនៅ">
+    <div class="sres hidden" id="fdSearchRes"></div>
     <div class="row">
       <div><label for="fdIrpg">IRPG</label><select id="fdIrpg"></select></div>
       <div><label for="fdVillage">Village</label><select id="fdVillage"></select></div>
     </div>
     <div class="stats">
-      <button class="stat" data-fk="total"><b id="fTotal">0</b><span>កសិករសរុប</span></button>
+      <button class="stat" data-fk="total"><b id="fTotal">0</b><span>កសិករសរុប Total</span></button>
+      <button class="stat" data-fk="yes"><b id="fYes">0</b><span>ជាប់ ICS-I Yes</span></button>
       <button class="stat" data-fk="elig"><b id="fElig">0</b><span>បន្តឆ្នាំក្រោយ</span></button>
-      <button class="stat" data-fk="rest"><b id="fRest">0</b><span>មិនទាន់បន្ត</span></button>
     </div>
-    <p class="hint">"បន្តឆ្នាំក្រោយ" = កសិករដែលបានបញ្ចប់ ICS-III ហើយ Compliance = Yes។ ចុចលើលេខ ដើម្បីមើលឈ្មោះ។</p>
+    <div class="stats s2">
+      <button class="stat" data-fk="no"><b id="fNo">0</b><span>No</span></button>
+      <button class="stat" data-fk="resign"><b id="fResign">0</b><span>Resign</span></button>
+      <button class="stat" data-fk="left"><b id="fLeft">0</b><span>មិនទាន់ត្រួតពិនិត្យ</span></button>
+    </div>
+    <p class="hint">"ជាប់ ICS-I" = Compliance Yes (Sheet ICS-I) — មានតែកសិករជាប់ ICS-I ទេដែលអាចបន្ត ICS-II → ICS-III។ "No / Resign" ពី Sheet NC/Resign។ "បន្តឆ្នាំក្រោយ" = ជាប់ ICS-III (Compliance = Yes) អាច Export ទៅបញ្ជីឆ្នាំបន្ទាប់។ ចុចលើលេខ ដើម្បីមើលឈ្មោះ។</p>
+    <div id="flVillages"></div>
     <div id="flLevels"></div>
     <div class="detail hidden" id="flDetail" tabindex="-1">
       <div class="dh"><b id="flDTitle"></b><button id="flDClose" aria-label="Close">&times;</button></div>
@@ -354,6 +391,9 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 
   <section class="card" id="dashCard">
     <div class="card-h"><span class="pill"></span><h2 id="dashTitle">របាយការណ៍ Progress</h2></div>
+    <label for="dSearch" class="srch-l">ស្វែងរកកសិករ Search <small>ID · Hus_Eng · Wif_Eng</small></label>
+    <input id="dSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ… ដើម្បីមើលថាធ្វើរួចឬនៅ">
+    <div class="sres hidden" id="dSearchRes"></div>
     <div class="row">
       <div>
         <label for="dIrpg">IRPG</label>
@@ -369,6 +409,12 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       <button class="stat" data-k="done"><b id="sDone">0</b><span>ធ្វើបាន Done</span></button>
       <button class="stat" data-k="left"><b id="sLeft">0</b><span>នៅសល់ Left</span></button>
     </div>
+    <div class="stats s2 hidden" id="cStats">
+      <button class="stat" data-k="yes"><b id="sYes">0</b><span>ជាប់ Yes</span></button>
+      <button class="stat" data-k="no"><b id="sNo">0</b><span>No</span></button>
+      <button class="stat" data-k="resign"><b id="sResign">0</b><span>Resign</span></button>
+    </div>
+    <p class="hint hidden" id="cHint">Yes = ពី Sheet ICS-I · No / Resign = ពី Sheet NC/Resign (រាប់តែទិន្នន័យដែលបាន Submit រួច)។</p>
     <div class="bar-t"><i id="barFill" style="width:0%"></i></div>
     <p class="pct" id="pct">0%</p>
     <p class="hint" id="tapHint">ចុចលើលេខ ដើម្បីមើលឈ្មោះកសិករ។</p>
@@ -507,6 +553,21 @@ function matchStatus(s) {
   return '';
 }
 
+/* ---------- ICS-I result (Yes from sheet ICS-I, No/Resign from sheet NC/Resign) ---------- */
+function ics1Map() {
+  var m = {};
+  data.ics1.concat(data.nc).forEach(function (r) {
+    var k = up(r.code), p = m[k];
+    if (!p || String(r.date || '') >= String(p.date || '')) m[k] = r;   // newest record wins
+  });
+  return m;
+}
+function cls1(m, code) {
+  var r = m[up(code)]; if (!r) return '';
+  var c = String(r.compliance || '').trim().toLowerCase();
+  return (c === 'yes' || c === 'no' || c === 'resign') ? c : '';
+}
+
 /* ---------- data sources ---------- */
 function sourceList(sec) {
   if (sec === 'ICS-I') {
@@ -515,9 +576,14 @@ function sourceList(sec) {
                yearJoin: f.yearJoin, status: f.status };
     });
   }
+  var byCode = {};
+  data.farmers.forEach(function (f) { byCode[up(f.code)] = f; });
   var prev = sec === 'ICS-II' ? data.ics1 : data.ics2;
   return latestBy(prev.filter(function (r) { return r.compliance === 'Yes'; })).map(function (r) {
-    return { irpg: r.irpg, village: r.village, code: r.code, hus: r.hus, wife: r.wife, yearJoin: r.yearJoin, status: r.status, prev: r.extra };
+    var f = byCode[up(r.code)] || {};   // fill gaps (e.g. rows typed by hand with an empty year) from Register farmers
+    return { irpg: r.irpg || f.irpg || '', village: r.village || f.village || '', code: r.code,
+             hus: r.hus || f.husEn || f.husKh || '', wife: r.wife || f.wifeEn || f.wifeKh || '',
+             yearJoin: r.yearJoin || f.yearJoin || '', status: r.status || f.status || '', prev: r.extra };
   });
 }
 function doneSet(sec) {
@@ -584,6 +650,7 @@ function refreshCodes() {
     return '<option value="' + esc(x.code) + '">' + esc(x.hus + (x.wife ? ' / ' + x.wife : '')) + '</option>';
   }).join('') : '';
   matchFarmer();
+  renderSearch();
 }
 function matchFarmer() {
   var v = up($('fCode').value);
@@ -644,6 +711,7 @@ function applySection() {
   form = { date: st.date || today(), inspector: st.inspector || '', irpg: st.irpg || '', village: st.village || '',
            code: '', farmer: null, status: '', compliance: '', extra: '', note: '' };
   $('fDate').value = form.date;
+  $('fSearch').value = ''; $('dSearch').value = '';
   $('fCode').value = '';
   $('fNote').value = '';
   $('fStatus').value = '';
@@ -825,26 +893,42 @@ function renderDash() {
   $('dashTitle').textContent = 'របាយការណ៍ ' + cur + ' · Progress';
   $('sTotal').textContent = total; $('sDone').textContent = dn; $('sLeft').textContent = left;
   $('barFill').style.width = pct + '%'; $('pct').textContent = pct + '%';
+  var isI = cur === 'ICS-I', c1 = isI ? ics1Map() : null;
+  $('cStats').classList.toggle('hidden', !isI); $('cHint').classList.toggle('hidden', !isI);
+  if (isI) {
+    var cy = 0, cn = 0, cr = 0;
+    f.forEach(function (x) { var k = cls1(c1, x.code); if (k === 'yes') cy++; else if (k === 'no') cn++; else if (k === 'resign') cr++; });
+    $('sYes').textContent = cy; $('sNo').textContent = cn; $('sResign').textContent = cr;
+  }
 
   var by = $('byVillage');
   if (!dash.village && total) {
     var g = {};
     f.forEach(function (x) {
       var k = x.irpg + '\u0000' + x.village;
-      g[k] = g[k] || { irpg: x.irpg, village: x.village, t: 0, d: 0 };
+      g[k] = g[k] || { irpg: x.irpg, village: x.village, t: 0, d: 0, y: 0, n: 0 };
       g[k].t++; if (done.has(up(x.code))) g[k].d++;
+      if (isI) { var kk = cls1(c1, x.code); if (kk === 'yes') g[k].y++; else if (kk === 'no' || kk === 'resign') g[k].n++; }
     });
     var rows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
-    by.innerHTML = '<table><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>សល់</th></tr></thead><tbody>' +
-      rows.map(function (r) {
-        return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
-      }).join('') + '</tbody></table>';
+    if (isI) {
+      by.innerHTML = '<table class="t5"><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>Yes</th><th>No/<br>Resign</th><th>សល់</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td>' + numBtn(r.y, 'yes', r) + '</td><td>' + numBtn(r.n, 'nr', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    } else {
+      by.innerHTML = '<table><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>សល់</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
   } else if (!total) {
     by.innerHTML = '<p class="hint">' + (cur === 'ICS-I' ? 'ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។'
       : 'មិនទាន់មានកសិករ Compliance = Yes ក្នុង ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' ទេ។') + '</p>';
   } else by.innerHTML = '';
 
   renderDetail(list, done);
+  renderTrack('dSearch', 'dSearchRes');
 }
 function numBtn(n, kind, r) {
   return '<button class="num' + (n ? '' : ' zero') + (detail && detail.kind === kind && detail.irpg === r.irpg && detail.village === r.village ? ' sel' : '') +
@@ -864,15 +948,25 @@ function renderDetail(list, done) {
     b.classList.toggle('sel', !!detail && detail.kind === b.dataset.k && detail.fromTile);
   });
   if (!detail) { box.classList.add('hidden'); return; }
+  var c1 = cur === 'ICS-I' ? ics1Map() : null;
   var items = list.filter(function (x) {
     if (detail.irpg && x.irpg !== detail.irpg) return false;
     if (detail.village && x.village !== detail.village) return false;
-    var d = done.has(up(x.code));
-    return detail.kind === 'total' || (detail.kind === 'done' ? d : !d);
+    var d = done.has(up(x.code)), k = c1 ? cls1(c1, x.code) : '';
+    switch (detail.kind) {
+      case 'total': return true;
+      case 'done': return d;
+      case 'left': return !d;
+      case 'yes': return k === 'yes';
+      case 'no': return k === 'no';
+      case 'resign': return k === 'resign';
+      case 'nr': return k === 'no' || k === 'resign';
+    }
+    return false;
   }).sort(function (a, b) {
     return (a.irpg + a.village).localeCompare(b.irpg + b.village, undefined, { numeric: true }) || a.code.localeCompare(b.code, undefined, { numeric: true });
   });
-  var label = { total: 'សរុប', done: 'ធ្វើរួច', left: 'មិនទាន់ធ្វើ' }[detail.kind];
+  var label = { total: 'សរុប', done: 'ធ្វើរួច', left: 'មិនទាន់ធ្វើ', yes: 'Compliance Yes', no: 'Compliance No', resign: 'Resign', nr: 'No / Resign' }[detail.kind];
   var where = (detail.irpg || 'All IRPG') + (detail.village ? ' · ' + detail.village : '');
   $('dTitle').textContent = label + ' · ' + where + ' (' + items.length + ')';
   var info = detail.kind === 'left' ? {} : recInfo(cur);
@@ -894,6 +988,88 @@ function renderDetail(list, done) {
 }
 
 
+
+/* ---------- track search: shows ICS-I / II / III status of a farmer ---------- */
+function mapBy(arr) { var m = {}; arr.forEach(function (r) { m[up(r.code)] = r; }); return m; }
+function pendMap(sec) {
+  var m = {};
+  queue.forEach(function (q) { if (q.section === sec && q.year === year) m[up(q.code)] = q; });
+  return m;
+}
+function stageTag(label, r, p) {
+  if (r) {
+    var c = r.compliance || 'Yes';
+    return '<span class="tag ' + esc(c) + '" title="' + esc([r.inspector, r.date].filter(Boolean).join(' · ')) + '">' + label + ': ✓ ' + esc(c) + '</span>';
+  }
+  if (p) return '<span class="tag Fallow">' + label + ': រង់ចាំផ្ញើ</span>';
+  return '<span class="tag info">' + label + ': —</span>';
+}
+function renderTrack(inId, boxId) {
+  var box = $(boxId), raw = $(inId).value.trim().toLowerCase();
+  if (raw.length < 2) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  var tokens = raw.split(/\s+/).filter(Boolean);
+  var m1 = ics1Map(), m2 = mapBy(data.ics2), m3 = mapBy(data.ics3);
+  var p1 = pendMap('ICS-I'), p2 = pendMap('ICS-II'), p3 = pendMap('ICS-III');
+  var hits = data.farmers.filter(function (f) {
+    var hay = [f.code, f.husKh, f.husEn, f.wifeKh, f.wifeEn].join(' ').toLowerCase();
+    return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
+  });
+  if (!hits.length) {
+    box.innerHTML = '<div class="sr-note">រកមិនឃើញក្នុងបញ្ជីកសិករ។</div>';
+    box.classList.remove('hidden'); return;
+  }
+  box.innerHTML = hits.slice(0, 10).map(function (f) {
+    var k = up(f.code), hus = f.husEn || f.husKh || '', wife = f.wifeEn || f.wifeKh || '';
+    return '<div class="sr st"><span class="n"><b>' + esc(f.code) + '</b> ' + esc(hus) + (wife && wife !== 'Widower' ? ' / ' + esc(wife) : '') +
+      '<small>' + esc(f.irpg) + ' · ' + esc(f.village) + '</small>' +
+      '<div class="chips">' + stageTag('ICS-I', m1[k], p1[k]) + stageTag('ICS-II', m2[k], p2[k]) + stageTag('ICS-III', m3[k], p3[k]) + '</div></span></div>';
+  }).join('') + (hits.length > 10 ? '<div class="sr-note">… និង ' + (hits.length - 10) + ' ទៀត — វាយអោយច្បាស់ជាងនេះ។</div>' : '');
+  box.classList.remove('hidden');
+}
+
+/* ---------- search farmers (ID / husband / wife) ---------- */
+function renderSearch() {
+  var box = $('searchRes'), raw = $('fSearch').value.trim().toLowerCase();
+  if (raw.length < 2) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  var tokens = raw.split(/\s+/).filter(Boolean);
+  var list = sourceList(cur), done = doneSet(cur), info = recInfo(cur), names = {};
+  data.farmers.forEach(function (f) { names[up(f.code)] = [f.husKh, f.husEn, f.wifeKh, f.wifeEn].join(' '); });
+  var hits = list.filter(function (x) {
+    var hay = [x.code, x.hus, x.wife, names[up(x.code)] || ''].join(' ').toLowerCase();
+    return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
+  });
+  if (!hits.length) {
+    var inReg = cur !== 'ICS-I' && data.farmers.some(function (f) {
+      var hay = [f.code, f.husKh, f.husEn, f.wifeKh, f.wifeEn].join(' ').toLowerCase();
+      return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
+    });
+    box.innerHTML = '<div class="sr-note">' + (inReg ? 'មានក្នុងបញ្ជីកសិករ ប៉ុន្តែមិនទាន់ជាប់ ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' (Compliance = Yes) — មិនអាចកត់ត្រាបានទេ។'
+      : 'រកមិនឃើញ' + (cur === 'ICS-I' ? '' : ' ក្នុងបញ្ជី ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' (Compliance = Yes)')) + '។</div>';
+    box.classList.remove('hidden'); return;
+  }
+  box.innerHTML = hits.slice(0, 8).map(function (x) {
+    var k = up(x.code), r = info[k], badge, sub = '';
+    if (done.has(k)) {
+      if (r && r.pending) badge = '<span class="tag Fallow">រង់ចាំផ្ញើ</span>';
+      else badge = '<span class="tag ' + esc(r && r.compliance ? r.compliance : 'Yes') + '">✓ ' + esc(r && r.compliance ? r.compliance : 'Done') + '</span>';
+      if (r) sub = [r.inspector, r.date].filter(Boolean).join(' · ');
+    } else badge = '<span class="tag info">មិនទាន់ធ្វើ</span>';
+    return '<button type="button" class="sr" data-code="' + esc(x.code) + '"><span class="n"><b>' + esc(x.code) + '</b> ' + esc(x.hus) +
+      (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') +
+      '<small>' + esc(x.irpg) + ' · ' + esc(x.village) + (sub ? ' · ' + esc(sub) : '') + '</small></span>' + badge + '</button>';
+  }).join('') + (hits.length > 8 ? '<div class="sr-note">… និង ' + (hits.length - 8) + ' ទៀត — វាយអោយច្បាស់ជាងនេះ។</div>' : '');
+  box.classList.remove('hidden');
+}
+function pickSearch(code) {
+  var x = sourceList(cur).filter(function (f) { return up(f.code) === up(code); })[0];
+  if (!x) return;
+  form.irpg = x.irpg; form.village = x.village;
+  $('fCode').value = x.code;
+  refreshIrpg(); rememberSticky();
+  $('fSearch').value = ''; renderSearch();
+  $('farmerBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 /* ---------- Farmers_List (export to next year + new registration) ---------- */
 function eligibleSet() {
   var latest = {};
@@ -903,55 +1079,105 @@ function eligibleSet() {
   return s;
 }
 function lvLabel(k) { return k ? LV[k].label : 'មិនស្គាល់ Other'; }
-function flBtn(n, kind, k) {
-  var sel = flDetail && flDetail.kind === kind && flDetail.lvl === k && !flDetail.fromTile;
-  return '<button class="num' + (n ? '' : ' zero') + (sel ? ' sel' : '') + '" data-fk="' + kind + '" data-lv="' + esc(k) + '"' + (n ? '' : ' disabled') + '>' + n + '</button>';
+function flBtn(n, kind, o) {
+  var lv = o.lvl == null ? null : o.lvl;
+  var sel = flDetail && !flDetail.fromTile && flDetail.kind === kind && flDetail.lvl === lv &&
+            (flDetail.irpg || '') === (o.irpg || '') && (flDetail.village || '') === (o.village || '');
+  return '<button class="num' + (n ? '' : ' zero') + (sel ? ' sel' : '') + '" data-fk="' + kind + '"' +
+    (lv !== null ? ' data-lv="' + esc(lv) + '"' : '') + ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '"' +
+    (n ? '' : ' disabled') + '>' + n + '</button>';
+}
+function tally(items, c1, elig) {
+  var c = { t: items.length, y: 0, n: 0, r: 0, e: 0 };
+  items.forEach(function (x) {
+    var k = cls1(c1, x.code);
+    if (k === 'yes') c.y++; else if (k === 'no') c.n++; else if (k === 'resign') c.r++;
+    if (elig.has(up(x.code))) c.e++;
+  });
+  return c;
+}
+function flTable(head, rows) {
+  return '<table class="t5"><thead><tr><th>' + head + '</th><th>សរុប</th><th>Yes</th><th>No/<br>Resign</th><th>បន្ត</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      return '<tr><td>' + r.label + '</td><td>' + flBtn(r.c.t, 'total', r.o) + '</td><td>' + flBtn(r.c.y, 'yes', r.o) + '</td><td>' +
+        flBtn(r.c.n + r.c.r, 'nr', r.o) + '</td><td>' + flBtn(r.c.e, 'elig', r.o) + '</td></tr>';
+    }).join('') + '</tbody></table>';
 }
 function renderFarmers() {
   $('flYearLbl').textContent = 'បញ្ជីកសិករឆ្នាំ ' + year;
   renderFlDash(); renderExport(); renderReg();
 }
 function renderFlDash() {
-  var list = data.farmers, elig = eligibleSet();
+  var list = data.farmers, elig = eligibleSet(), c1 = ics1Map();
   fillSelect($('fdIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), 'ទាំងអស់ · All', fdash.irpg);
   fdash.irpg = $('fdIrpg').value;
   var inI = list.filter(function (x) { return !fdash.irpg || x.irpg === fdash.irpg; });
   fillSelect($('fdVillage'), uniqSorted(inI.map(function (x) { return x.village; })), 'ទាំងអស់ · All', fdash.village);
   fdash.village = $('fdVillage').value;
   var f = inI.filter(function (x) { return !fdash.village || x.village === fdash.village; });
-  var e = f.filter(function (x) { return elig.has(up(x.code)); }).length;
-  $('fTotal').textContent = f.length; $('fElig').textContent = e; $('fRest').textContent = f.length - e;
+  var c = tally(f, c1, elig);
+  $('fTotal').textContent = c.t; $('fYes').textContent = c.y; $('fElig').textContent = c.e;
+  $('fNo').textContent = c.n; $('fResign').textContent = c.r; $('fLeft').textContent = c.t - c.y - c.n - c.r;
+
+  // IRPG · Village table (same idea as the ICS-I report)
+  var g = {};
+  f.forEach(function (x) {
+    var k = x.irpg + '\u0000' + x.village;
+    g[k] = g[k] || { irpg: x.irpg, village: x.village, items: [] };
+    g[k].items.push(x);
+  });
+  var vrows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
+  $('flVillages').innerHTML = (!fdash.village && vrows.length)
+    ? flTable('IRPG · Village', vrows.map(function (r) {
+        return { label: esc(r.irpg) + ' · ' + esc(r.village), c: tally(r.items, c1, elig), o: { irpg: r.irpg, village: r.village } };
+      }))
+    : '';
+
+  // Level table
   var rows = LV_ORDER.concat(['']).map(function (k) {
     var items = f.filter(function (x) { return classifyLevel(x.level) === k; });
-    return { k: k, t: items.length, e: items.filter(function (x) { return elig.has(up(x.code)); }).length };
-  }).filter(function (r) { return r.t; });
-  $('flLevels').innerHTML = rows.length
-    ? '<table><thead><tr><th>កម្រិត Level</th><th>សរុប</th><th>បន្ត</th></tr></thead><tbody>' +
-      rows.map(function (r) {
-        return '<tr><td>' + esc(lvLabel(r.k)) + '</td><td>' + flBtn(r.t, 'total', r.k) + '</td><td class="left">' + flBtn(r.e, 'elig', r.k) + '</td></tr>';
-      }).join('') + '</tbody></table>'
+    return { label: esc(lvLabel(k)), c: tally(items, c1, elig), o: { lvl: k } };
+  }).filter(function (r) { return r.c.t; });
+  $('flLevels').innerHTML = rows.length ? flTable('កម្រិត Level', rows)
     : '<p class="hint">មិនទាន់មានទិន្នន័យ — ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។</p>';
+
   document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
     b.classList.toggle('sel', !!flDetail && flDetail.fromTile && flDetail.kind === b.dataset.fk);
   });
-  renderFlDetail(f, elig);
+  renderFlDetail(f, elig, c1);
+  renderTrack('fdSearch', 'fdSearchRes');
 }
-function renderFlDetail(f, elig) {
+function renderFlDetail(f, elig, c1) {
   var box = $('flDetail');
   if (!flDetail) { box.classList.add('hidden'); return; }
   var items = f.filter(function (x) {
+    if (flDetail.irpg && x.irpg !== flDetail.irpg) return false;
+    if (flDetail.village && x.village !== flDetail.village) return false;
     if (flDetail.lvl !== null && classifyLevel(x.level) !== flDetail.lvl) return false;
-    var el = elig.has(up(x.code));
-    return flDetail.kind === 'total' || (flDetail.kind === 'elig' ? el : !el);
+    var k = cls1(c1, x.code), e = elig.has(up(x.code));
+    switch (flDetail.kind) {
+      case 'total': return true;
+      case 'yes': return k === 'yes';
+      case 'no': return k === 'no';
+      case 'resign': return k === 'resign';
+      case 'nr': return k === 'no' || k === 'resign';
+      case 'left': return !k;
+      case 'elig': return e;
+    }
+    return false;
+  }).sort(function (a, b) {
+    return (a.irpg + a.village).localeCompare(b.irpg + b.village, undefined, { numeric: true }) || a.code.localeCompare(b.code, undefined, { numeric: true });
   });
-  var label = { total: 'សរុប', elig: 'បន្តឆ្នាំក្រោយ', rest: 'មិនទាន់បន្ត' }[flDetail.kind];
-  $('flDTitle').textContent = label + (flDetail.lvl !== null ? ' · ' + lvLabel(flDetail.lvl) : '') + ' (' + items.length + ')';
+  var label = { total: 'សរុប', yes: 'ជាប់ ICS-I (Yes)', no: 'Compliance No', resign: 'Resign', nr: 'No / Resign', left: 'មិនទាន់ត្រួតពិនិត្យ', elig: 'បន្តឆ្នាំក្រោយ' }[flDetail.kind];
+  var where = flDetail.village ? ' · ' + flDetail.irpg + ' · ' + flDetail.village : (flDetail.irpg ? ' · ' + flDetail.irpg : '');
+  $('flDTitle').textContent = label + (flDetail.lvl !== null ? ' · ' + lvLabel(flDetail.lvl) : '') + where + ' (' + items.length + ')';
   var out = '', lastV = null;
   items.slice(0, 600).forEach(function (x) {
     var key = x.irpg + '|' + x.village;
     if (key !== lastV) { lastV = key; out += '<li class="vil">' + esc(x.irpg) + ' · ' + esc(x.village) + '</li>'; }
-    var k = classifyLevel(x.level), next = k && elig.has(up(x.code)) ? ' → ' + LV[LV[k].next].label : '';
-    out += '<li><code>' + esc(x.code) + '</code>' + esc(x.husEn || x.husKh) + (x.wifeEn && x.wifeEn !== 'Widower' ? ' / ' + esc(x.wifeEn) : '') +
+    var lk = classifyLevel(x.level), next = lk && elig.has(up(x.code)) ? ' → ' + LV[LV[lk].next].label : '';
+    var r = c1[up(x.code)], tag = r ? ' <span class="tag ' + esc(r.compliance) + '">ICS-I: ' + esc(r.compliance) + '</span>' : '';
+    out += '<li><code>' + esc(x.code) + '</code>' + esc(x.husEn || x.husKh) + (x.wifeEn && x.wifeEn !== 'Widower' ? ' / ' + esc(x.wifeEn) : '') + tag +
       '<small>' + esc(x.level || '-') + esc(next) + '</small></li>';
   });
   if (items.length > 600) out += '<li>… និង ' + (items.length - 600) + ' ទៀត (ជ្រើស Village ដើម្បីបង្រួម)</li>';
@@ -1096,6 +1322,8 @@ $('fInspector').onchange = function () {
 $('fIrpg').onchange = function () { form.irpg = this.value; form.village = ''; $('fCode').value = ''; refreshVillage(); rememberSticky(); };
 $('fVillage').onchange = function () { form.village = this.value; $('fCode').value = ''; refreshCodes(); rememberSticky(); };
 $('fCode').oninput = matchFarmer;
+$('fSearch').oninput = renderSearch;
+$('searchRes').addEventListener('click', function (e) { var b = e.target.closest('.sr'); if (b) pickSearch(b.dataset.code); });
 $('fStatus').onchange = function () { form.status = this.value; };
 $('dIrpg').onchange = function () { dash.irpg = this.value; dash.village = ''; detail = null; renderDash(); };
 $('dVillage').onchange = function () { dash.village = this.value; detail = null; renderDash(); };
@@ -1120,15 +1348,20 @@ $('fdVillage').onchange = function () { fdash.village = this.value; flDetail = n
 document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
   b.onclick = function () {
     if (flDetail && flDetail.fromTile && flDetail.kind === b.dataset.fk) { flDetail = null; renderFlDash(); return; }
-    showFlDetail({ kind: b.dataset.fk, lvl: null, fromTile: true });
+    showFlDetail({ kind: b.dataset.fk, lvl: null, irpg: '', village: '', fromTile: true });
   };
 });
-$('flLevels').addEventListener('click', function (e) {
+function flTableClick(e) {
   var b = e.target.closest('button.num'); if (!b || b.disabled) return;
-  var d = { kind: b.dataset.fk, lvl: b.dataset.lv };
-  if (flDetail && !flDetail.fromTile && flDetail.kind === d.kind && flDetail.lvl === d.lvl) { flDetail = null; renderFlDash(); return; }
+  var d = { kind: b.dataset.fk, lvl: b.dataset.lv === undefined ? null : b.dataset.lv, irpg: b.dataset.i || '', village: b.dataset.v || '' };
+  if (flDetail && !flDetail.fromTile && flDetail.kind === d.kind && flDetail.lvl === d.lvl &&
+      (flDetail.irpg || '') === d.irpg && (flDetail.village || '') === d.village) { flDetail = null; renderFlDash(); return; }
   showFlDetail(d);
-});
+}
+$('flLevels').addEventListener('click', flTableClick);
+$('flVillages').addEventListener('click', flTableClick);
+$('dSearch').oninput = function () { renderTrack('dSearch', 'dSearchRes'); };
+$('fdSearch').oninput = function () { renderTrack('fdSearch', 'fdSearchRes'); };
 $('flDClose').onclick = function () { flDetail = null; renderFlDash(); };
 $('toYear').onchange = function () { toYear = this.value; renderFarmers(); };
 $('exportBtn').onclick = doExport;
