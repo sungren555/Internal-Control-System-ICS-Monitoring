@@ -1,5 +1,5 @@
 // Bump CACHE when you change index.html so phones pick up the new version.
-const CACHE = 'ics-monitor-v13';
+const CACHE = 'ics-monitor-v16';
 const SHELL = [
   './',
   './index.html',
