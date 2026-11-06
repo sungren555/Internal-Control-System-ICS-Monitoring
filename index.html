@@ -61,11 +61,11 @@ header{position:sticky;top:0;z-index:10;color:#fff;
   background:rgba(255,255,255,.14);color:#fff;cursor:pointer;text-decoration:none}
 .iconbtn:hover{background:rgba(255,255,255,.24)}
 
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
 .tab{position:relative;border:0;background:var(--t);color:#fff;padding:10px 6px 9px;border-radius:14px 14px 0 0;
   font:inherit;cursor:pointer;line-height:1.25;text-align:center;opacity:.92}
-.tab b{display:block;font-size:17px;letter-spacing:.3px}
-.tab span{display:block;font-size:12.5px;opacity:.95}
+.tab b{display:block;font-size:16px;letter-spacing:.2px}
+.tab span{display:block;font-size:12px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tab[aria-selected=true]{background:var(--bg);color:var(--t);opacity:1;box-shadow:0 -3px 10px rgba(0,0,0,.12)}
 .tab[aria-selected=true] span{opacity:1;font-weight:600}
 .bdg{position:absolute;top:5px;right:7px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#fff;color:var(--t);
@@ -74,9 +74,9 @@ header{position:sticky;top:0;z-index:10;color:#fff;
 
 /* ---------- layout ---------- */
 main{max-width:1080px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.col{display:grid;gap:16px;align-content:start;min-width:0}
 @media (min-width:900px){
-  main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:auto 1fr}
-  #formCard{grid-row:span 2}
+  main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
 }
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
 .card-h{display:flex;align-items:center;gap:10px;margin:0 0 4px}
@@ -165,11 +165,22 @@ button.num.sel{background:var(--c);color:#fff}
 .rem small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
 .rem .vil{font-weight:700;color:var(--ct);border-bottom:2px solid var(--c-line);padding-top:12px}
 
+header select.yearsel{width:auto;min-height:40px;height:40px;padding:0 30px 0 12px;border-radius:12px;font-weight:700;font-size:15px;
+  color:#fff;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position:right 10px center}
+header select.yearsel option{color:var(--ink);background:var(--card)}
+header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);background-color:rgba(255,255,255,.22);border-color:#fff}
+.hint.warn{color:var(--no-t);font-weight:600}
+.exres{margin-top:12px}
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);
   padding:12px 18px;border-radius:14px;font-size:15px;max-width:92%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.show{opacity:1}
 @media (max-width:560px){
   #sheetBtn{display:none}
+  #cfgBtn:not(.need){display:none}
+  .chip:not(.off) #netTxt{display:none}
+  .chip{padding:6px 9px}
   .iconbtn{width:38px;height:38px}
   .chip{padding:4px 9px;font-size:13px}
   .brand h1{font-size:17px}
@@ -190,7 +201,8 @@ button.num.sel{background:var(--c);color:#fff}
       <div><h1>ICS Monitoring</h1><small id="syncInfo">មិនទាន់ទាញទិន្នន័យ</small></div>
     </div>
     <div class="acts">
-      <span class="chip" id="netChip">Online</span>
+      <span class="chip" id="netChip"><span id="netTxt">Online</span></span>
+      <select class="yearsel" id="yearSel" aria-label="Year"></select>
       <a class="iconbtn" id="sheetBtn" target="_blank" rel="noopener" title="Open Google Sheet" aria-label="Open Google Sheet"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></a>
       <button class="iconbtn" id="themeBtn" aria-label="Dark / light mode" title="Dark mode"></button>
       <button class="iconbtn" id="syncBtn" title="Refresh farmers" aria-label="Refresh farmers"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></button>
@@ -198,14 +210,16 @@ button.num.sel{background:var(--c);color:#fff}
     </div>
   </div>
   <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" data-sec="ICS-I"   style="--t:#256b30;--tl:#86d493"><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ · Planting</span></button>
-    <button class="tab" role="tab" data-sec="ICS-II"  style="--t:#a85f00;--tl:#f2b45a"><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ · Threshing</span></button>
-    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f;--tl:#9cc4f5"><b>ICS-III</b><em class="bdg hidden" id="bdg-ICS-III"></em><span>ក្រោយប្រមូលផល · Burn check</span></button>
+    <button class="tab" role="tab" data-sec="ICS-I"   style="--t:#256b30;--tl:#86d493"><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ</span></button>
+    <button class="tab" role="tab" data-sec="ICS-II"  style="--t:#a85f00;--tl:#f2b45a"><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ</span></button>
+    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f;--tl:#9cc4f5"><b>ICS-III</b><em class="bdg hidden" id="bdg-ICS-III"></em><span>ក្រោយផល</span></button>
+    <button class="tab" role="tab" data-sec="FARMERS" style="--t:#6b3fa0;--tl:#cdb0f2"><b>Farmers</b><em class="bdg hidden" id="bdg-FARMERS"></em><span>បញ្ជីកសិករ</span></button>
   </nav>
  </div>
 </header>
 
 <main>
+<div class="col" id="colL">
   <section class="card" id="formCard">
     <div class="card-h"><span class="pill"></span><h2 id="formTitle">ICS-I</h2></div>
 
@@ -267,6 +281,68 @@ button.num.sel{background:var(--c);color:#fff}
     <p class="hint">ទិន្នន័យនៅក្នុងទូរស័ព្ទសិន។ ពេលមានអ៊ីនធឺណិត ទើបចុច Submit។</p>
   </section>
 
+
+  <!-- ===== Farmers_List dashboard ===== -->
+  <section class="card hidden" id="flDash">
+    <div class="card-h"><span class="pill"></span><h2>Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2></div>
+    <div class="row">
+      <div><label for="fdIrpg">IRPG</label><select id="fdIrpg"></select></div>
+      <div><label for="fdVillage">Village</label><select id="fdVillage"></select></div>
+    </div>
+    <div class="stats">
+      <button class="stat" data-fk="total"><b id="fTotal">0</b><span>កសិករសរុប</span></button>
+      <button class="stat" data-fk="elig"><b id="fElig">0</b><span>បន្តឆ្នាំក្រោយ</span></button>
+      <button class="stat" data-fk="rest"><b id="fRest">0</b><span>មិនទាន់បន្ត</span></button>
+    </div>
+    <p class="hint">"បន្តឆ្នាំក្រោយ" = កសិករដែលបានបញ្ចប់ ICS-III ហើយ Compliance = Yes។ ចុចលើលេខ ដើម្បីមើលឈ្មោះ។</p>
+    <div id="flLevels"></div>
+    <div class="detail hidden" id="flDetail" tabindex="-1">
+      <div class="dh"><b id="flDTitle"></b><button id="flDClose" aria-label="Close">&times;</button></div>
+      <ul class="rem" id="flDList"></ul>
+    </div>
+    <div class="btns">
+      <a class="btn ghost" id="sheetLink2" target="_blank" rel="noopener">បើក Google Sheet</a>
+    </div>
+  </section>
+
+  <!-- ===== Export ICS-III -> next year ===== -->
+  <section class="card hidden" id="flExport">
+    <div class="card-h"><span class="pill"></span><h2>Export ICS-III → Farmers_List <small>ផ្ទេរកសិករចូលឆ្នាំបន្ទាប់</small></h2></div>
+    <label for="toYear">Export to year <em>*</em></label>
+    <select id="toYear"></select>
+    <p class="hint">កសិករដែល Compliance = Yes ក្នុង ICS-III នឹងក្លាយជា "Existing farmer" ក្នុង Sheet ឆ្នាំបន្ទាប់ ហើយកម្រិតឡើងមួយជំហាន។ ចុច Export ម្តងទៀតមិនបង្កើតស្ទួនទេ។</p>
+    <div id="exPrev"></div>
+    <div class="btns"><button class="btn primary" id="exportBtn">Export</button></div>
+    <div class="farmer exres hidden" id="exResult"></div>
+  </section>
+</div>
+<div class="col" id="colR">
+  <!-- ===== New registration ===== -->
+  <section class="card hidden" id="flReg">
+    <div class="card-h"><span class="pill"></span><h2>New Registration <small>ចុះឈ្មោះកសិករថ្មី → <b id="regYearLbl">—</b></small></h2></div>
+    <div class="row">
+      <div><label for="rIrpg">ក្រុមផលិត IRPG <em>*</em></label><select id="rIrpg"></select></div>
+      <div><label for="rVillage">ភូមិ Village <em>*</em></label><select id="rVillage"></select></div>
+    </div>
+    <label for="rCode">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
+    <input id="rCode" autocomplete="off" autocapitalize="characters" placeholder="ឧ. BM054">
+    <p class="hint" id="rCodeHint"></p>
+    <div class="row">
+      <div><label for="rHusKh">ឈ្មោះប្តី (ខ្មែរ)</label><input id="rHusKh" autocomplete="off"></div>
+      <div><label for="rHusEn">Husband name (Eng)</label><input id="rHusEn" autocomplete="off"></div>
+    </div>
+    <div class="row">
+      <div><label for="rWifeKh">ឈ្មោះប្រពន្ធ (ខ្មែរ)</label><input id="rWifeKh" autocomplete="off"></div>
+      <div><label for="rWifeEn">Wife name (Eng)</label><input id="rWifeEn" autocomplete="off"></div>
+    </div>
+    <div class="row">
+      <div><label for="rYear">ឆ្នាំចូលរួម Year join <em>*</em></label><input id="rYear" inputmode="numeric" autocomplete="off"></div>
+      <div><label for="rLevel">កម្រិត Level <em>*</em></label><select id="rLevel"></select></div>
+    </div>
+    <p class="hint">ស្ថានភាព: New farmer (សមាជិកថ្មី)។</p>
+    <div class="btns"><button class="btn primary" id="regSave">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button></div>
+  </section>
+
   <section class="card" id="queueCard">
     <div class="card-h"><span class="pill"></span><h2>រង់ចាំផ្ញើ <small>Waiting to submit (<span id="qCount">0</span>)</small></h2></div>
     <div id="qList"><p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p></div>
@@ -305,6 +381,7 @@ button.num.sel{background:var(--c);color:#fff}
       <a class="btn ghost" id="sheetLink" target="_blank" rel="noopener">មើលព័ត៌មានលម្អិតក្នុង Google Sheet</a>
     </div>
   </section>
+</div>
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
@@ -315,15 +392,39 @@ button.num.sel{background:var(--c);color:#fff}
 
 /* ======= SETTINGS: paste your Apps Script Web app URL (ends with /exec) ======= */
 const API_URL = 'https://script.google.com/macros/s/AKfycbw00uMO30du1WjM4Zl0WZtrwN_lSsfZ1u4HLwJGPXOaLZP6erVHQz4lcsS6QMTRyoOu/exec';
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/15rGxdGxmObah82YREOxX3NDeLOOSukxVkYLhDes889I/edit?usp=sharing';
+const YEARS = ['2026', '2027'];   // add '2028' ... here when the next year's Sheet is ready (also add its ID in Code.gs > YEAR_FILES)
+const SHEET_URLS = {
+  '2026': 'https://docs.google.com/spreadsheets/d/15rGxdGxmObah82YREOxX3NDeLOOSukxVkYLhDes889I/edit?usp=sharing',
+  '2027': 'https://docs.google.com/spreadsheets/d/1fyPAAW8rNR3QrBcT1krgFFiGzA_aOv4d8YOpl1PIuZU/edit?usp=sharing'
+};
 const DEFAULT_INSPECTORS = [];   // e.g. ['Sok Dara', 'Chan Sophea']; inspectors can also be added in the app
 /* ============================================================================== */
 
 const SEC = {
   'ICS-I':   { color: '#256b30', dk: '#2b7f39', tx: '#86d493', extraName: 'Planting',   extraOpts: ['Yes', 'Fallow'], compl: ['Yes', 'No', 'Resign'] },
   'ICS-II':  { color: '#a85f00', dk: '#b36500', tx: '#f2b45a', extraName: 'Threshing',  extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] },
-  'ICS-III': { color: '#1f4f8f', dk: '#2d64ad', tx: '#9cc4f5', extraName: 'Burn Check', extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] }
+  'ICS-III': { color: '#1f4f8f', dk: '#2d64ad', tx: '#9cc4f5', extraName: 'Burn Check', extraOpts: ['Yes', 'No'],     compl: ['Yes', 'No'] },
+  'FARMERS': { color: '#6b3fa0', dk: '#7a4cb3', tx: '#cdb0f2' }
 };
+// Level promotion when a farmer continues into next year
+const LV = {
+  y1:     { label: 'ឆ្នាំទី១ · WF',       next: 'y2' },
+  y2:     { label: 'ឆ្នាំទី២ · Ibis I',   next: 'y3' },
+  y3:     { label: 'ឆ្នាំទី៣ · Ibis II',  next: 'newOrg' },
+  newOrg: { label: 'New Organic',         next: 'org' },
+  org:    { label: 'Organic',             next: 'org' }
+};
+const LV_ORDER = ['y1', 'y2', 'y3', 'newOrg', 'org'];
+function classifyLevel(text) {
+  var s = String(text || '').toLowerCase();
+  if (!s.trim()) return '';
+  if (/new\s*organic/.test(s)) return 'newOrg';
+  if (/ibis\s*(ii|2)(?![a-z])/.test(s) || /ទី\s*៣/.test(s)) return 'y3';
+  if (/ibis\s*(i|1)(?![a-z])/.test(s) || /ទី\s*២/.test(s)) return 'y2';
+  if (/\bwf\b/.test(s) || /ទី\s*១/.test(s)) return 'y1';
+  if (/organic|សរីរាង្គ/.test(s)) return 'org';
+  return '';
+}
 const TITLES = {
   'ICS-I': 'ICS-I · ដាំស្រូវ Rice planting',
   'ICS-II': 'ICS-II · កត់ត្រាការបោកស្រូវ Threshing record',
@@ -345,8 +446,20 @@ const store = {
 };
 
 var apiUrl = API_URL || store.get('ics_api', '');
-var data = store.get('ics_data', { farmers: [], inspectors: [], ics1: [], nc: [], ics2: [], ics3: [], time: null });
+var year = store.get('ics_year', YEARS[0]);
+if (YEARS.indexOf(year) < 0) year = YEARS[0];
+function emptyData() { return { farmers: [], inspectors: [], ics1: [], nc: [], ics2: [], ics3: [], time: null }; }
+function loadData(y) {
+  var d = store.get('ics_data_' + y, null) || (y === YEARS[0] ? store.get('ics_data', null) : null) || emptyData();
+  ['farmers', 'inspectors', 'ics1', 'nc', 'ics2', 'ics3'].forEach(function (k) { if (!d[k]) d[k] = []; });
+  return d;
+}
+var data = loadData(year);
 var queue = store.get('ics_queue', []);
+queue.forEach(function (q) { if (!q.year) q.year = YEARS[0]; });
+var toYear = '', exporting = false;
+var fdash = { irpg: '', village: '' }, flDetail = null;
+var reg = { irpg: '', village: '', level: 'y1', custom: { irpg: [], village: [] } };
 var inspectors = store.get('ics_inspectors', DEFAULT_INSPECTORS.slice());
 var sticky = store.get('ics_sticky', {});
 var cur = store.get('ics_sec', 'ICS-I');
@@ -412,7 +525,7 @@ function doneSet(sec) {
   var s = new Set(recs.map(function (r) { return up(r.code); }));
   var marked = sec === 'ICS-I' ? data.farmers : sec === 'ICS-II' ? data.ics1 : data.ics2;   // "Done" markers in the sheet
   marked.forEach(function (r) { if (/^done/i.test(r.done || r.next || '')) s.add(up(r.code)); });
-  queue.forEach(function (q) { if (q.section === sec) s.add(up(q.code)); });
+  queue.forEach(function (q) { if (q.section === sec && q.year === year) s.add(up(q.code)); });
   return s;
 }
 
@@ -519,6 +632,10 @@ function applySection() {
   var s = SEC[cur];
   applyTheme();
   document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.sec === cur ? 'true' : 'false'); });
+  var fl = cur === 'FARMERS';
+  ['formCard', 'dashCard'].forEach(function (id) { $(id).classList.toggle('hidden', fl); });
+  ['flDash', 'flExport', 'flReg'].forEach(function (id) { $(id).classList.toggle('hidden', !fl); });
+  if (fl) { flDetail = null; renderFarmers(); renderQueue(); return; }
   $('formTitle').textContent = TITLES[cur];
   $('statusWrap').classList.toggle('hidden', cur !== 'ICS-I');
   $('extraLabel').innerHTML = s.extraName + ' <em>*</em>';
@@ -566,7 +683,7 @@ function saveOffline() {
       !confirm('Family_ID ' + f.farmer.code + ' ត្រូវបានកត់ត្រារួចហើយ។ រក្សាទុកម្តងទៀត?')) return;
 
   queue.push({
-    id: uid(), section: cur, savedAt: new Date().toISOString(),
+    id: uid(), section: cur, year: year, savedAt: new Date().toISOString(),
     inspector: f.inspector, date: f.date, irpg: f.farmer.irpg, village: f.farmer.village, code: f.farmer.code,
     hus: f.farmer.hus, wife: f.farmer.wife, yearJoin: f.farmer.yearJoin,
     status: f.status, compliance: f.compliance,
@@ -588,28 +705,30 @@ function saveOffline() {
 }
 
 /* ---------- queue + submit ---------- */
-function qMine() { return queue.filter(function (q) { return q.section === cur; }); }
+function qMine() { return queue.filter(function (q) { return q.section === cur && q.year === year; }); }
+function refreshView() { if (cur === 'FARMERS') renderFarmers(); else { refreshCodes(); renderDash(); } }
 function renderQueue() {
   var mine = qMine();
   $('qCount').textContent = mine.length;
   Object.keys(SEC).forEach(function (s) {
-    var n = queue.filter(function (q) { return q.section === s; }).length, b = $('bdg-' + s);
+    var n = queue.filter(function (q) { return q.section === s && q.year === year; }).length, b = $('bdg-' + s);
     b.textContent = n; b.classList.toggle('hidden', !n);
   });
   var box = $('qList');
   if (!mine.length) { box.innerHTML = '<p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p>'; }
   else {
     box.innerHTML = mine.map(function (q) {
+      var isReg = q.section === 'FARMERS';
       return '<div class="q-item"><div class="t"><b>' + esc(q.code) + '</b> ' + esc(q.hus) +
-        ' <span class="tag ' + esc(q.compliance) + '">' + esc(q.compliance) + '</span>' +
-        '<small>' + esc(q.section) + ' · ' + esc(q.village) + ' · ' + esc(q.date) + '</small></div>' +
+        (q.compliance ? ' <span class="tag ' + esc(q.compliance) + '">' + esc(q.compliance) + '</span>' : '') +
+        '<small>' + (isReg ? 'ចុះឈ្មោះថ្មី → ' + esc(q.toYear) : esc(q.section)) + ' · ' + esc(q.village) + (q.date ? ' · ' + esc(q.date) : '') + '</small></div>' +
         '<button data-del="' + esc(q.id) + '" aria-label="Delete">&times;</button></div>';
     }).join('');
     box.querySelectorAll('[data-del]').forEach(function (b) {
       b.onclick = function () {
         if (!confirm('លុបទិន្នន័យនេះ?')) return;
         queue = queue.filter(function (q) { return q.id !== b.dataset.del; });
-        store.set('ics_queue', queue); renderQueue(); refreshCodes(); renderDash();
+        store.set('ics_queue', queue); renderQueue(); refreshView();
       };
     });
   }
@@ -618,11 +737,12 @@ function renderQueue() {
 function updateNet() {
   var online = navigator.onLine;
   var chip = $('netChip');
-  chip.textContent = online ? 'Online' : 'Offline';
+  $('netTxt').textContent = online ? 'Online' : 'Offline';
   chip.classList.toggle('off', !online);
+  $('cfgBtn').classList.toggle('need', !apiUrl);
   var btn = $('submitBtn');
   var n = qMine().length;
-  btn.textContent = 'Submit ' + cur + (n ? ' (' + n + ')' : '');
+  btn.textContent = 'Submit ' + (cur === 'FARMERS' ? 'Registration' : cur) + (n ? ' (' + n + ')' : '');
   btn.disabled = !online || !n || submitting;
   var hint = $('submitHint');
   if (!apiUrl) hint.textContent = 'មិនទាន់ដាក់ Web App URL — ចុចប៊ូតុង ⚙ ខាងលើ។';
@@ -640,16 +760,17 @@ async function submitQueue() {
                                     body: JSON.stringify({ records: batch }), redirect: 'follow' });
     var j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Server error');
-    var ok = new Set((j.saved || []).concat(j.duplicates || []));
+    var sk = j.skipped || [];
+    var ok = new Set((j.saved || []).concat(j.duplicates || []).concat(sk.map(function (s) { return s.id; })));
     var n = (j.saved || []).length;
     queue = queue.filter(function (q) { return !ok.has(q.id); });
     store.set('ics_queue', queue);
-    toast('ផ្ញើបាន ' + n + ' កំណត់ត្រា ✓');
+    toast('ផ្ញើបាន ' + n + ' កំណត់ត្រា ✓' + (sk.length ? ' · រំលង (មានរួចហើយ): ' + sk.map(function (s) { return s.code; }).join(', ') : ''));
     await sync(true);
   } catch (e) {
     toast('ផ្ញើមិនបាន — ទិន្នន័យនៅរក្សាទុកក្នុងទូរស័ព្ទ។ ' + (e.message || ''));
   }
-  submitting = false; renderQueue(); refreshCodes(); renderDash();
+  submitting = false; renderQueue(); refreshView();
 }
 
 /* ---------- sync from Google Sheet ---------- */
@@ -658,15 +779,19 @@ async function sync(quiet) {
   if (!navigator.onLine) { if (!quiet) toast('គ្មានអ៊ីនធឺណិត'); return; }
   if (syncing) return;
   syncing = true; $('syncBtn').style.opacity = .5;
+  var y = year;
   try {
-    var res = await fetch(apiUrl + (apiUrl.indexOf('?') < 0 ? '?' : '&') + 'action=sync&t=' + Date.now(), { redirect: 'follow' });
+    var res = await fetch(apiUrl + (apiUrl.indexOf('?') < 0 ? '?' : '&') + 'action=sync&year=' + y + '&t=' + Date.now(), { redirect: 'follow' });
     var j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Server error');
-    data = { farmers: j.farmers || [], inspectors: j.inspectors || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], time: j.time };
-    store.set('ics_data', data);
-    showSyncInfo();
-    fillInspectors(); refreshIrpg(); renderDash();
-    if (!quiet) toast('ទាញទិន្នន័យថ្មីរួចហើយ ✓');
+    var fresh = { farmers: j.farmers || [], inspectors: j.inspectors || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], time: j.time };
+    store.set('ics_data_' + y, fresh);
+    if (y === year) {
+      data = fresh;
+      showSyncInfo();
+      if (cur === 'FARMERS') renderFarmers(); else { fillInspectors(); refreshIrpg(); renderDash(); }
+      if (!quiet) toast('ទាញទិន្នន័យថ្មីរួចហើយ ✓');
+    }
   } catch (e) {
     if (!quiet) toast('ទាញទិន្នន័យមិនបាន: ' + (e.message || ''));
   }
@@ -729,13 +854,13 @@ function recInfo(sec) {
   var recs = sec === 'ICS-I' ? data.ics1.concat(data.nc) : sec === 'ICS-II' ? data.ics2 : data.ics3;
   var m = {};
   recs.forEach(function (r) { m[up(r.code)] = r; });
-  queue.forEach(function (q) { if (q.section === sec && !m[up(q.code)]) m[up(q.code)] = { inspector: q.inspector, date: q.date, compliance: q.compliance, pending: true }; });
+  queue.forEach(function (q) { if (q.section === sec && q.year === year && !m[up(q.code)]) m[up(q.code)] = { inspector: q.inspector, date: q.date, compliance: q.compliance, pending: true }; });
   return m;
 }
 function renderDetail(list, done) {
   var box = $('detail');
   $('tapHint').classList.toggle('hidden', !!detail);
-  document.querySelectorAll('button.stat').forEach(function (b) {
+  document.querySelectorAll('button.stat[data-k]').forEach(function (b) {
     b.classList.toggle('sel', !!detail && detail.kind === b.dataset.k && detail.fromTile);
   });
   if (!detail) { box.classList.add('hidden'); return; }
@@ -768,6 +893,193 @@ function renderDetail(list, done) {
   box.classList.remove('hidden');
 }
 
+
+/* ---------- Farmers_List (export to next year + new registration) ---------- */
+function eligibleSet() {
+  var latest = {};
+  (data.ics3 || []).forEach(function (r) { latest[up(r.code)] = r; });
+  var s = new Set();
+  Object.keys(latest).forEach(function (c) { if (latest[c].compliance === 'Yes') s.add(c); });
+  return s;
+}
+function lvLabel(k) { return k ? LV[k].label : 'មិនស្គាល់ Other'; }
+function flBtn(n, kind, k) {
+  var sel = flDetail && flDetail.kind === kind && flDetail.lvl === k && !flDetail.fromTile;
+  return '<button class="num' + (n ? '' : ' zero') + (sel ? ' sel' : '') + '" data-fk="' + kind + '" data-lv="' + esc(k) + '"' + (n ? '' : ' disabled') + '>' + n + '</button>';
+}
+function renderFarmers() {
+  $('flYearLbl').textContent = 'បញ្ជីកសិករឆ្នាំ ' + year;
+  renderFlDash(); renderExport(); renderReg();
+}
+function renderFlDash() {
+  var list = data.farmers, elig = eligibleSet();
+  fillSelect($('fdIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), 'ទាំងអស់ · All', fdash.irpg);
+  fdash.irpg = $('fdIrpg').value;
+  var inI = list.filter(function (x) { return !fdash.irpg || x.irpg === fdash.irpg; });
+  fillSelect($('fdVillage'), uniqSorted(inI.map(function (x) { return x.village; })), 'ទាំងអស់ · All', fdash.village);
+  fdash.village = $('fdVillage').value;
+  var f = inI.filter(function (x) { return !fdash.village || x.village === fdash.village; });
+  var e = f.filter(function (x) { return elig.has(up(x.code)); }).length;
+  $('fTotal').textContent = f.length; $('fElig').textContent = e; $('fRest').textContent = f.length - e;
+  var rows = LV_ORDER.concat(['']).map(function (k) {
+    var items = f.filter(function (x) { return classifyLevel(x.level) === k; });
+    return { k: k, t: items.length, e: items.filter(function (x) { return elig.has(up(x.code)); }).length };
+  }).filter(function (r) { return r.t; });
+  $('flLevels').innerHTML = rows.length
+    ? '<table><thead><tr><th>កម្រិត Level</th><th>សរុប</th><th>បន្ត</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td>' + esc(lvLabel(r.k)) + '</td><td>' + flBtn(r.t, 'total', r.k) + '</td><td class="left">' + flBtn(r.e, 'elig', r.k) + '</td></tr>';
+      }).join('') + '</tbody></table>'
+    : '<p class="hint">មិនទាន់មានទិន្នន័យ — ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។</p>';
+  document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
+    b.classList.toggle('sel', !!flDetail && flDetail.fromTile && flDetail.kind === b.dataset.fk);
+  });
+  renderFlDetail(f, elig);
+}
+function renderFlDetail(f, elig) {
+  var box = $('flDetail');
+  if (!flDetail) { box.classList.add('hidden'); return; }
+  var items = f.filter(function (x) {
+    if (flDetail.lvl !== null && classifyLevel(x.level) !== flDetail.lvl) return false;
+    var el = elig.has(up(x.code));
+    return flDetail.kind === 'total' || (flDetail.kind === 'elig' ? el : !el);
+  });
+  var label = { total: 'សរុប', elig: 'បន្តឆ្នាំក្រោយ', rest: 'មិនទាន់បន្ត' }[flDetail.kind];
+  $('flDTitle').textContent = label + (flDetail.lvl !== null ? ' · ' + lvLabel(flDetail.lvl) : '') + ' (' + items.length + ')';
+  var out = '', lastV = null;
+  items.slice(0, 600).forEach(function (x) {
+    var key = x.irpg + '|' + x.village;
+    if (key !== lastV) { lastV = key; out += '<li class="vil">' + esc(x.irpg) + ' · ' + esc(x.village) + '</li>'; }
+    var k = classifyLevel(x.level), next = k && elig.has(up(x.code)) ? ' → ' + LV[LV[k].next].label : '';
+    out += '<li><code>' + esc(x.code) + '</code>' + esc(x.husEn || x.husKh) + (x.wifeEn && x.wifeEn !== 'Widower' ? ' / ' + esc(x.wifeEn) : '') +
+      '<small>' + esc(x.level || '-') + esc(next) + '</small></li>';
+  });
+  if (items.length > 600) out += '<li>… និង ' + (items.length - 600) + ' ទៀត (ជ្រើស Village ដើម្បីបង្រួម)</li>';
+  $('flDList').innerHTML = out || '<li>មិនមានឈ្មោះទេ។</li>';
+  box.classList.remove('hidden');
+}
+function showFlDetail(d) {
+  flDetail = d; renderFlDash();
+  var box = $('flDetail'); if (!box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderExport() {
+  var targets = YEARS.filter(function (y) { return y > year; });
+  var sel = $('toYear');
+  sel.innerHTML = targets.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join('');
+  if (targets.indexOf(toYear) < 0) toYear = targets[0] || '';
+  sel.value = toYear;
+  var elig = eligibleSet();
+  var list = data.farmers.filter(function (x) { return elig.has(up(x.code)); });
+  var tr = {};
+  list.forEach(function (x) {
+    var k = classifyLevel(x.level), key = k || '?';
+    tr[key] = (tr[key] || 0) + 1;
+  });
+  var rows = LV_ORDER.concat(['?']).filter(function (k) { return tr[k]; });
+  var html;
+  if (!toYear) html = '<p class="hint warn">មិនមានឆ្នាំបន្ទាប់ទេ — បន្ថែមឆ្នាំថ្មីក្នុង YEARS (index.html) និង YEAR_FILES (Code.gs)។</p>';
+  else if (!list.length) html = '<p class="hint">មិនទាន់មានកសិករ ICS-III ដែល Compliance = Yes ទេ។ (ចុច ↻ ដើម្បីទាញទិន្នន័យថ្មី)</p>';
+  else html = '<table><thead><tr><th>កម្រិត ' + year + ' → ' + toYear + '</th><th>កសិករ</th></tr></thead><tbody>' +
+    rows.map(function (k) {
+      var txt = k === '?' ? 'មិនស្គាល់ (រក្សាដដែល)' : LV[k].label + ' → ' + LV[LV[k].next].label;
+      return '<tr><td>' + esc(txt) + '</td><td><b>' + tr[k] + '</b></td></tr>';
+    }).join('') + '<tr><td><b>សរុប Total</b></td><td><b>' + list.length + '</b></td></tr></tbody></table>';
+  $('exPrev').innerHTML = html;
+  var b = $('exportBtn');
+  b.textContent = exporting ? 'កំពុង Export…' : (toYear ? 'Export ICS-III → ' + toYear + (list.length ? ' (' + list.length + ')' : '') : 'Export');
+  b.disabled = !toYear || !list.length || !navigator.onLine || exporting;
+}
+async function doExport() {
+  if (!toYear || exporting) return;
+  if (!apiUrl) { setApi(); return; }
+  var n = eligibleSet().size;
+  if (!confirm('Export កសិករ ' + n + ' នាក់ ពីឆ្នាំ ' + year + ' ទៅ Farmers_List ឆ្នាំ ' + toYear + ' ?')) return;
+  exporting = true; renderExport();
+  var box = $('exResult');
+  try {
+    var res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                    body: JSON.stringify({ action: 'export', from: year, to: toYear }), redirect: 'follow' });
+    var j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Server error');
+    box.innerHTML = '<dl><dt>បានបន្ថែម Added</dt><dd>' + j.added + '</dd>' +
+      '<dt>មានរួចហើយ Already there</dt><dd>' + j.alreadyThere + '</dd>' +
+      (j.notFound ? '<dt>រកមិនឃើញក្នុង Register</dt><dd>' + j.notFound + '</dd>' : '') +
+      (j.unclassified ? '<dt>កម្រិតមិនស្គាល់ (រក្សាដដែល)</dt><dd>' + j.unclassified + '</dd>' : '') + '</dl>';
+    box.classList.remove('hidden');
+    toast('Export ជោគជ័យ → ' + toYear + ' ✓ (' + j.added + ' នាក់)');
+  } catch (e) {
+    toast('Export មិនបាន: ' + (e.message || ''));
+  }
+  exporting = false; renderExport();
+}
+
+function opt(v, t) { return '<option value="' + esc(v) + '">' + esc(t == null ? v : t) + '</option>'; }
+function fillSelectNew(sel, items, placeholder, value) {
+  sel.innerHTML = opt('', placeholder) + items.map(function (v) { return opt(v); }).join('') + opt('__new', '+ ថ្មី New…');
+  sel.value = items.indexOf(value) >= 0 ? value : '';
+}
+function suggestCode(village) {
+  var codes = data.farmers.filter(function (x) { return x.village === village; }).map(function (x) { return x.code; })
+    .concat(queue.filter(function (q) { return q.section === 'FARMERS' && q.village === village; }).map(function (q) { return q.code; }));
+  var best = null, max = -1;
+  codes.forEach(function (c) {
+    var m = /^(.*?)(\d+)$/.exec(String(c).trim());
+    if (m) { var n = parseInt(m[2], 10); if (n > max) { max = n; best = m; } }
+  });
+  if (!best) return '';
+  var next = String(max + 1);
+  while (next.length < best[2].length) next = '0' + next;
+  return best[1] + next;
+}
+function renderReg() {
+  $('regYearLbl').textContent = toYear || '—';
+  var irpgs = uniqSorted(data.farmers.map(function (x) { return x.irpg; }).concat(reg.custom.irpg));
+  fillSelectNew($('rIrpg'), irpgs, '— IRPG —', reg.irpg); reg.irpg = $('rIrpg').value;
+  var vill = uniqSorted(data.farmers.filter(function (x) { return !reg.irpg || x.irpg === reg.irpg; })
+    .map(function (x) { return x.village; }).concat(reg.custom.village));
+  fillSelectNew($('rVillage'), vill, '— Village —', reg.village); reg.village = $('rVillage').value;
+  var lv = $('rLevel');
+  if (!lv.options.length) lv.innerHTML = LV_ORDER.map(function (k) { return opt(k, LV[k].label); }).join('');
+  lv.value = reg.level;
+  if (!$('rYear').value && toYear) $('rYear').value = toYear;
+  var sg = reg.village ? suggestCode(reg.village) : '';
+  $('rCode').placeholder = sg ? 'ឧ. ' + sg : 'ឧ. BM054';
+  $('rCodeHint').textContent = sg ? 'កូដបន្ទាប់ដែលសមស្រប: ' + sg + ' (ចុចដើម្បីប្រើ)' : '';
+  $('rCodeHint').dataset.sg = sg;
+}
+function pickNew(sel, kind) {
+  var n = (prompt(kind === 'irpg' ? 'ឈ្មោះ IRPG ថ្មី:' : 'ឈ្មោះភូមិថ្មី:') || '').trim();
+  if (n && reg.custom[kind].indexOf(n) < 0) reg.custom[kind].push(n);
+  return n;
+}
+function saveReg() {
+  var v = function (id) { return $(id).value.trim(); };
+  var code = v('rCode').toUpperCase();
+  var miss = [];
+  if (!toYear) miss.push('Export year');
+  if (!reg.irpg) miss.push('IRPG');
+  if (!reg.village) miss.push('Village');
+  if (!code) miss.push('Family_ID');
+  if (!v('rHusKh') && !v('rHusEn')) miss.push('ឈ្មោះប្តី');
+  if (!v('rYear')) miss.push('Year join');
+  if (miss.length) { toast('សូមបំពេញ: ' + miss.join(', ')); return; }
+  if (data.farmers.some(function (x) { return up(x.code) === code; })) { toast('Family_ID ' + code + ' មានរួចហើយក្នុងបញ្ជីឆ្នាំ ' + year); return; }
+  if (queue.some(function (q) { return q.section === 'FARMERS' && q.toYear === toYear && up(q.code) === code; })) { toast('Family_ID ' + code + ' កំពុងរង់ចាំផ្ញើរួចហើយ'); return; }
+  queue.push({
+    id: uid(), section: 'FARMERS', year: year, toYear: toYear, savedAt: new Date().toISOString(),
+    irpg: reg.irpg, village: reg.village, code: code,
+    husKh: v('rHusKh'), husEn: v('rHusEn'), wifeKh: v('rWifeKh'), wifeEn: v('rWifeEn'),
+    hus: v('rHusEn') || v('rHusKh'), wife: v('rWifeEn') || v('rWifeKh'),
+    yearJoin: v('rYear'), level: reg.level, status: 'New farmer'
+  });
+  store.set('ics_queue', queue);
+  ['rCode', 'rHusKh', 'rHusEn', 'rWifeKh', 'rWifeEn'].forEach(function (id) { $(id).value = ''; });
+  renderReg(); renderQueue();
+  toast('រក្សាទុកក្នុងទូរស័ព្ទរួចហើយ ✓');
+  $('rCode').focus();
+}
+
 /* ---------- wiring ---------- */
 document.querySelectorAll('.tab').forEach(function (t) {
   t.onclick = function () { if (cur === t.dataset.sec) return; cur = t.dataset.sec; store.set('ics_sec', cur); applySection(); window.scrollTo(0, 0); };
@@ -796,13 +1108,44 @@ $('byVillage').addEventListener('click', function (e) {
   if (detail && detail.kind === b.dataset.k && detail.irpg === b.dataset.i && detail.village === b.dataset.v) { detail = null; renderDash(); return; }
   showDetail({ kind: b.dataset.k, irpg: b.dataset.i, village: b.dataset.v });
 });
-document.querySelectorAll('button.stat').forEach(function (b) {
+document.querySelectorAll('button.stat[data-k]').forEach(function (b) {
   b.onclick = function () {
     if (detail && detail.fromTile && detail.kind === b.dataset.k) { detail = null; renderDash(); return; }
     showDetail({ kind: b.dataset.k, irpg: dash.irpg, village: dash.village, fromTile: true });
   };
 });
 $('dClose').onclick = function () { detail = null; renderDash(); };
+$('fdIrpg').onchange = function () { fdash.irpg = this.value; fdash.village = ''; flDetail = null; renderFlDash(); };
+$('fdVillage').onchange = function () { fdash.village = this.value; flDetail = null; renderFlDash(); };
+document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
+  b.onclick = function () {
+    if (flDetail && flDetail.fromTile && flDetail.kind === b.dataset.fk) { flDetail = null; renderFlDash(); return; }
+    showFlDetail({ kind: b.dataset.fk, lvl: null, fromTile: true });
+  };
+});
+$('flLevels').addEventListener('click', function (e) {
+  var b = e.target.closest('button.num'); if (!b || b.disabled) return;
+  var d = { kind: b.dataset.fk, lvl: b.dataset.lv };
+  if (flDetail && !flDetail.fromTile && flDetail.kind === d.kind && flDetail.lvl === d.lvl) { flDetail = null; renderFlDash(); return; }
+  showFlDetail(d);
+});
+$('flDClose').onclick = function () { flDetail = null; renderFlDash(); };
+$('toYear').onchange = function () { toYear = this.value; renderFarmers(); };
+$('exportBtn').onclick = doExport;
+$('rIrpg').onchange = function () {
+  var val = this.value;
+  if (val === '__new') val = pickNew(this, 'irpg');
+  reg.irpg = val; reg.village = ''; renderReg();
+};
+$('rVillage').onchange = function () {
+  var val = this.value;
+  if (val === '__new') val = pickNew(this, 'village');
+  reg.village = val; renderReg();
+};
+$('rLevel').onchange = function () { reg.level = this.value; };
+$('rCodeHint').onclick = function () { if (this.dataset.sg) { $('rCode').value = this.dataset.sg; } };
+$('regSave').onclick = saveReg;
+
 $('saveBtn').onclick = saveOffline;
 $('submitBtn').onclick = submitQueue;
 $('syncBtn').onclick = function () { sync(false); };
@@ -811,9 +1154,23 @@ $('themeBtn').onclick = function () { theme = theme === 'dark' ? 'light' : 'dark
 if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
   if (!store.get('ics_theme', null)) { theme = e.matches ? 'dark' : 'light'; applyTheme(); }
 });
-$('sheetBtn').href = SHEET_URL; $('sheetLink').href = SHEET_URL;
-window.addEventListener('online', function () { updateNet(); sync(true); });
-window.addEventListener('offline', updateNet);
+function setSheetLinks() {
+  var u = SHEET_URLS[year] || '#';
+  ['sheetBtn', 'sheetLink', 'sheetLink2'].forEach(function (id) { $(id).href = u; });
+}
+setSheetLinks();
+(function buildYearSel() {
+  var s = $('yearSel');
+  s.innerHTML = YEARS.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join('');
+  s.value = year;
+  s.onchange = function () {
+    year = this.value; store.set('ics_year', year);
+    data = loadData(year); flDetail = null; fdash = { irpg: '', village: '' };
+    setSheetLinks(); showSyncInfo(); applySection(); sync(true);
+  };
+})();
+window.addEventListener('online', function () { updateNet(); if (cur === 'FARMERS') renderExport(); sync(true); });
+window.addEventListener('offline', function () { updateNet(); if (cur === 'FARMERS') renderExport(); });
 setInterval(function () { if (!document.hidden && navigator.onLine && !submitting) sync(true); }, 180000);   // keep every inspector's view fresh
 document.addEventListener('visibilitychange', function () { if (!document.hidden && navigator.onLine) sync(true); });
 
