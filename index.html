@@ -189,6 +189,11 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .coll{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:48px;margin-top:12px;padding:0 14px;
   border:1.5px solid var(--c-line);background:var(--c-soft);color:var(--ct);border-radius:12px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left}
 .coll .chev{flex:none;transition:transform .2s}
+.pklist{max-height:260px;overflow:auto;margin-top:6px;border-top:1px solid var(--c-line)}
+.pk{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line2);background:transparent;padding:9px 4px;min-height:46px;font:inherit;color:var(--ink);cursor:pointer}
+.pk:hover,.pk:focus-visible{background:var(--card)}
+.pk small{color:var(--muted);font-size:13.5px}
+.farmer .lh{font-size:14px;color:var(--muted)}
 .coll[aria-expanded=true] .chev{transform:rotate(90deg)}
 table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
@@ -275,9 +280,12 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
     </div>
 
     <div class="grp"><span class="n">2</span>កសិករ <small>Farmer</small></div>
-    <label for="fSearch" style="margin-top:6px">ស្វែងរកកសិករ Search <small style="font-weight:500;color:var(--muted)">ID · ឈ្មោះប្តី · ឈ្មោះប្រពន្ធ</small></label>
-    <input id="fSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ…">
-    <div class="sres hidden" id="searchRes"></div>
+    <button type="button" class="coll" style="margin-top:6px" data-coll="sf" aria-expanded="false"><span>🔍 ស្វែងរកកសិករ Search</span><span class="chev">▸</span></button>
+    <div class="collbody hidden">
+      <label for="fSearch" style="margin-top:8px"><small style="font-weight:500;color:var(--muted)">ID · ឈ្មោះប្តី · ឈ្មោះប្រពន្ធ</small></label>
+      <input id="fSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ…">
+      <div class="sres hidden" id="searchRes"></div>
+    </div>
     <label for="fCode">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
     <input id="fCode" list="codeList" autocomplete="off" autocapitalize="characters" placeholder="ឧ. BM001 ឬ 1">
     <datalist id="codeList"></datalist>
@@ -317,9 +325,12 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
   <!-- ===== Farmers_List dashboard ===== -->
   <section class="card hidden" id="flDash">
     <div class="card-h"><span class="pill"></span><h2>Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2></div>
-    <label for="fdSearch" class="srch-l">ស្វែងរកកសិករ Search <small>ID · Hus_Eng · Wif_Eng</small></label>
-    <input id="fdSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ… ដើម្បីមើលថាធ្វើរួចឬនៅ">
-    <div class="sres hidden" id="fdSearchRes"></div>
+    <button type="button" class="coll" data-coll="sfd" aria-expanded="false"><span>🔍 ស្វែងរកកសិករ Search</span><span class="chev">▸</span></button>
+    <div class="collbody hidden">
+      <label for="fdSearch" class="srch-l"><small>ID · Hus_Eng · Wif_Eng — មើលថាធ្វើរួចឬនៅ</small></label>
+      <input id="fdSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ…">
+      <div class="sres hidden" id="fdSearchRes"></div>
+    </div>
     <div class="row">
       <div><label for="fdIrpg">IRPG</label><select id="fdIrpg"></select></div>
       <div><label for="fdVillage">Village</label><select id="fdVillage"></select></div>
@@ -398,9 +409,12 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 
   <section class="card" id="dashCard">
     <div class="card-h"><span class="pill"></span><h2 id="dashTitle">របាយការណ៍ Progress</h2></div>
-    <label for="dSearch" class="srch-l">ស្វែងរកកសិករ Search <small>ID · Hus_Eng · Wif_Eng</small></label>
-    <input id="dSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ… ដើម្បីមើលថាធ្វើរួចឬនៅ">
-    <div class="sres hidden" id="dSearchRes"></div>
+    <button type="button" class="coll" data-coll="sd" aria-expanded="false"><span>🔍 ស្វែងរកកសិករ Search</span><span class="chev">▸</span></button>
+    <div class="collbody hidden">
+      <label for="dSearch" class="srch-l"><small>ID · Hus_Eng · Wif_Eng — មើលថាធ្វើរួចឬនៅ</small></label>
+      <input id="dSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ…">
+      <div class="sres hidden" id="dSearchRes"></div>
+    </div>
     <div class="row">
       <div>
         <label for="dIrpg">IRPG</label>
@@ -562,6 +576,7 @@ function matchStatus(s) {
 
 /* ---------- collapsible blocks (open/closed state is remembered) ---------- */
 var coll = store.get('ics_coll', {});
+coll.sf = coll.sd = coll.sfd = false;   // search boxes always start hidden
 function collapsible(key, title, n, inner) {
   var o = !!coll[key];
   return '<button type="button" class="coll" data-coll="' + key + '" aria-expanded="' + o + '"><span>' + title + (n != null ? ' (' + n + ')' : '') +
@@ -572,6 +587,10 @@ document.addEventListener('click', function (e) {
   var k = b.dataset.coll; coll[k] = !coll[k]; store.set('ics_coll', coll);
   b.setAttribute('aria-expanded', coll[k] ? 'true' : 'false');
   var body = b.nextElementSibling; if (body) body.classList.toggle('hidden', !coll[k]);
+  if (body && /^s(f|d|fd)$/.test(k)) {
+    if (coll[k]) setTimeout(function () { var i = body.querySelector('input[type=search]'); if (i) i.focus(); }, 30);
+    else body.querySelectorAll('input[type=search]').forEach(function (i) { i.value = ''; i.dispatchEvent(new Event('input')); });
+  }
 });
 
 /* ---------- ICS-I result (Yes from sheet ICS-I, No/Resign from sheet NC/Resign) ---------- */
@@ -673,12 +692,27 @@ function refreshCodes() {
   matchFarmer();
   renderSearch();
 }
+function pickList(q, strict) {
+  var done = doneSet(cur), qq = String(q || '').toLowerCase();
+  var all = candidates();
+  var left = all.filter(function (x) { return !done.has(up(x.code)); });
+  var items = left.filter(function (x) { return !qq || [x.code, x.hus, x.wife].join(' ').toLowerCase().indexOf(qq) >= 0; });
+  var html = '<div class="lh">ជ្រើសកសិករ · នៅសល់ ' + left.length + (qq ? ' · ត្រូវនឹង ' + items.length : '') + '</div><div class="pklist">' +
+    items.slice(0, 300).map(function (x) {
+      return '<button type="button" class="pk" data-code="' + esc(x.code) + '"><b>' + esc(x.code) + '</b> ' + esc(x.hus || '-') +
+        (x.wife && x.wife !== 'Widower' ? ' / ' + esc(x.wife) : '') + '</button>';
+    }).join('') + '</div>';
+  if (strict) return items.length ? html : '';
+  if (!all.length) return '<span class="none">គ្មានកសិករក្នុងភូមិនេះ</span>';
+  if (!left.length) return '<span class="none">កសិករក្នុងភូមិនេះ ត្រូវបានកត់ត្រារួចហើយទាំងអស់ ✓</span>';
+  return items.length ? html : '';
+}
 function matchFarmer() {
   var v = up($('fCode').value);
   form.code = v; form.farmer = null;
   var box = $('farmerBox');
   if (!form.village) { box.innerHTML = '<span class="none">ជ្រើសភូមិ រួចវាយ Family_ID</span>'; syncStatusField(); return; }
-  if (!v) { box.innerHTML = '<span class="none">វាយ Family_ID ដើម្បីបង្ហាញឈ្មោះ</span>'; syncStatusField(); return; }
+  if (!v) { box.innerHTML = pickList('') || '<span class="none">វាយ Family_ID ដើម្បីបង្ហាញឈ្មោះ</span>'; syncStatusField(); return; }
   var list = candidates();
   var hit = list.filter(function (x) { return up(x.code) === v; })[0];
   if (!hit && /^\d+$/.test(v)) {
@@ -687,7 +721,7 @@ function matchFarmer() {
     if (m.length === 1) hit = m[0];
   }
   if (!hit) {
-    box.innerHTML = '<span class="bad">រកមិនឃើញក្នុងភូមិនេះ · Not found in this village</span>';
+    box.innerHTML = '<span class="bad">រកមិនឃើញក្នុងភូមិនេះ · Not found in this village</span>' + pickList(v, true);
     syncStatusField(); return;
   }
   form.farmer = hit;
@@ -1344,6 +1378,10 @@ $('fInspector').onchange = function () {
 $('fIrpg').onchange = function () { form.irpg = this.value; form.village = ''; $('fCode').value = ''; refreshVillage(); rememberSticky(); };
 $('fVillage').onchange = function () { form.village = this.value; $('fCode').value = ''; refreshCodes(); rememberSticky(); };
 $('fCode').oninput = matchFarmer;
+$('farmerBox').addEventListener('click', function (e) {
+  var b = e.target.closest('.pk'); if (!b) return;
+  $('fCode').value = b.dataset.code; matchFarmer();
+});
 $('fSearch').oninput = renderSearch;
 $('searchRes').addEventListener('click', function (e) { var b = e.target.closest('.sr'); if (b) pickSearch(b.dataset.code); });
 $('fStatus').onchange = function () { form.status = this.value; };
