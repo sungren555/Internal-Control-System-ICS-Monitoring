@@ -648,9 +648,11 @@ function mkSeg(el, opts, key, onChange) {
     };
   });
 }
+// Only rewrite the <option>s when the list really changed, so the auto-refresh never closes a dropdown the user is using.
+function setOpts(sel, html) { if (sel._h !== html) { sel.innerHTML = html; sel._h = html; } }
 function fillSelect(sel, items, placeholder, value) {
-  sel.innerHTML = '<option value="">' + placeholder + '</option>' +
-    items.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('');
+  setOpts(sel, '<option value="">' + placeholder + '</option>' +
+    items.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join(''));
   sel.value = items.indexOf(value) >= 0 ? value : '';
 }
 function inspectorList() {
@@ -660,9 +662,9 @@ function inspectorList() {
 function fillInspectors() {
   var sel = $('fInspector'), list = inspectorList();
   var canAdd = !(data.inspectors && data.inspectors.length);
-  sel.innerHTML = '<option value="">— ជ្រើសរើស —</option>' +
+  setOpts(sel, '<option value="">— ជ្រើសរើស —</option>' +
     list.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('') +
-    (canAdd ? '<option value="__add">+ បន្ថែមឈ្មោះ Add inspector</option>' : '');
+    (canAdd ? '<option value="__add">+ បន្ថែមឈ្មោះ Add inspector</option>' : ''));
   sel.value = list.indexOf(form.inspector) >= 0 ? form.inspector : '';
   form.inspector = sel.value;
 }
@@ -1298,7 +1300,7 @@ async function doExport() {
 
 function opt(v, t) { return '<option value="' + esc(v) + '">' + esc(t == null ? v : t) + '</option>'; }
 function fillSelectNew(sel, items, placeholder, value) {
-  sel.innerHTML = opt('', placeholder) + items.map(function (v) { return opt(v); }).join('') + opt('__new', '+ ថ្មី New…');
+  setOpts(sel, opt('', placeholder) + items.map(function (v) { return opt(v); }).join('') + opt('__new', '+ ថ្មី New…'));
   sel.value = items.indexOf(value) >= 0 ? value : '';
 }
 function suggestCode(village) {
