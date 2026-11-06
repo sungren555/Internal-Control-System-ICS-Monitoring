@@ -186,6 +186,10 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .chips .tag{margin:0;font-size:12.5px}
 .srch-l{margin-top:10px}
 .srch-l small{font-weight:500;color:var(--muted)}
+.coll{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:48px;margin-top:12px;padding:0 14px;
+  border:1.5px solid var(--c-line);background:var(--c-soft);color:var(--ct);border-radius:12px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left}
+.coll .chev{flex:none;transition:transform .2s}
+.coll[aria-expanded=true] .chev{transform:rotate(90deg)}
 table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
 table.t5 th,table.t5 td{padding:7px 2px}
@@ -357,6 +361,8 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
   <!-- ===== New registration ===== -->
   <section class="card hidden" id="flReg">
     <div class="card-h"><span class="pill"></span><h2>New Registration <small>ចុះឈ្មោះកសិករថ្មី → <b id="regYearLbl">—</b></small></h2></div>
+    <button type="button" class="coll" id="regBtn" data-coll="reg" aria-expanded="false"><span>បើកទម្រង់ចុះឈ្មោះ Open form</span><span class="chev">▸</span></button>
+    <div class="collbody hidden" id="regBody">
     <div class="row">
       <div><label for="rIrpg">ក្រុមផលិត IRPG <em>*</em></label><select id="rIrpg"></select></div>
       <div><label for="rVillage">ភូមិ Village <em>*</em></label><select id="rVillage"></select></div>
@@ -378,6 +384,7 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
     </div>
     <p class="hint">ស្ថានភាព: New farmer (សមាជិកថ្មី)។</p>
     <div class="btns"><button class="btn primary" id="regSave">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button></div>
+    </div>
   </section>
 
   <section class="card" id="queueCard">
@@ -552,6 +559,20 @@ function matchStatus(s) {
   for (var i = 0; i < STATUSES.length; i++) if (STATUSES[i].toLowerCase() === v) return STATUSES[i];
   return '';
 }
+
+/* ---------- collapsible blocks (open/closed state is remembered) ---------- */
+var coll = store.get('ics_coll', {});
+function collapsible(key, title, n, inner) {
+  var o = !!coll[key];
+  return '<button type="button" class="coll" data-coll="' + key + '" aria-expanded="' + o + '"><span>' + title + (n != null ? ' (' + n + ')' : '') +
+    '</span><span class="chev">▸</span></button><div class="collbody' + (o ? '' : ' hidden') + '">' + inner + '</div>';
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest ? e.target.closest('[data-coll]') : null; if (!b) return;
+  var k = b.dataset.coll; coll[k] = !coll[k]; store.set('ics_coll', coll);
+  b.setAttribute('aria-expanded', coll[k] ? 'true' : 'false');
+  var body = b.nextElementSibling; if (body) body.classList.toggle('hidden', !coll[k]);
+});
 
 /* ---------- ICS-I result (Yes from sheet ICS-I, No/Resign from sheet NC/Resign) ---------- */
 function ics1Map() {
@@ -922,6 +943,7 @@ function renderDash() {
           return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
         }).join('') + '</tbody></table>';
     }
+    by.innerHTML = collapsible('vil', 'តាមភូមិ By village', rows.length, by.innerHTML);
   } else if (!total) {
     by.innerHTML = '<p class="hint">' + (cur === 'ICS-I' ? 'ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។'
       : 'មិនទាន់មានកសិករ Compliance = Yes ក្នុង ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' ទេ។') + '</p>';
@@ -1128,9 +1150,9 @@ function renderFlDash() {
   });
   var vrows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
   $('flVillages').innerHTML = (!fdash.village && vrows.length)
-    ? flTable('IRPG · Village', vrows.map(function (r) {
+    ? collapsible('flv', 'តាមភូមិ By village', vrows.length, flTable('IRPG · Village', vrows.map(function (r) {
         return { label: esc(r.irpg) + ' · ' + esc(r.village), c: tally(r.items, c1, elig), o: { irpg: r.irpg, village: r.village } };
-      }))
+      })))
     : '';
 
   // Level table
@@ -1138,7 +1160,7 @@ function renderFlDash() {
     var items = f.filter(function (x) { return classifyLevel(x.level) === k; });
     return { label: esc(lvLabel(k)), c: tally(items, c1, elig), o: { lvl: k } };
   }).filter(function (r) { return r.c.t; });
-  $('flLevels').innerHTML = rows.length ? flTable('កម្រិត Level', rows)
+  $('flLevels').innerHTML = rows.length ? collapsible('fll', 'តាមកម្រិត By level', rows.length, flTable('កម្រិត Level', rows))
     : '<p class="hint">មិនទាន់មានទិន្នន័យ — ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។</p>';
 
   document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
@@ -1411,6 +1433,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   navigator.serviceWorker.register('sw.js').catch(function () {});
 }
 
+if (coll.reg) { $('regBtn').setAttribute('aria-expanded', 'true'); $('regBody').classList.remove('hidden'); }
 showSyncInfo();
 applySection();
 if (!apiUrl) toast('ដាក់ Web App URL ក្នុង ⚙ ជាមុនសិន');
