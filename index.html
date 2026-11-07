@@ -203,6 +203,33 @@ table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
 table.t5 th,table.t5 td{padding:7px 2px}
 table.t5 button.num{min-width:36px;padding:2px 6px}
+.ti{display:block;font-style:normal;font-size:19px;line-height:1.15;margin-bottom:1px}
+.tab[aria-selected=false] .ti{opacity:.65}
+.chart{display:flex;align-items:center;gap:14px;margin:14px 0 6px}
+.chart:empty{display:none}
+.donut{width:132px;height:132px;flex:none}
+.dn-b{font-size:26px;font-weight:800;fill:var(--ink)}
+.dn-s{font-size:11px;fill:var(--guide)}
+.dl{list-style:none;margin:0;padding:0;flex:1;min-width:0}
+.dl li{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:14.5px;color:var(--ink)}
+.dl i,.bl i{width:12px;height:12px;border-radius:4px;flex:none;display:inline-block}
+.dl span{flex:1}
+.dl b{font-variant-numeric:tabular-nums}
+.bl{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 2px;font-size:13.5px;color:var(--guide)}
+.bl span{display:inline-flex;align-items:center;gap:6px}
+.c-yes{background:#2f9e55;color:#fff}.c-no{background:#d9534f;color:#fff}.c-rs{background:#6b7a8f;color:#fff}
+.c-left{background:#e9a23b;color:#3a2600}.c-pend{background:#a8d5ad;color:#143d1b}.c-done{background:var(--c);color:#fff}
+.vr{margin:4px 0 12px}
+.vhw{display:flex;align-items:center;gap:8px}
+.vh{flex:1;display:flex;justify-content:space-between;gap:8px;width:100%;background:none;border:0;font:inherit;font-weight:600;color:var(--ink);padding:8px 0 5px;text-align:left;cursor:pointer;min-width:0}
+.vh b{font-variant-numeric:tabular-nums;color:var(--ct);white-space:nowrap}
+.vh.sel span{text-decoration:underline}
+.vc{border:0;border-radius:99px;background:var(--c-soft);color:var(--ct);font:inherit;font-weight:700;padding:4px 10px;min-height:34px;cursor:pointer}
+.vc.sel{background:var(--c);color:#fff}
+.vb{display:flex;height:32px;border-radius:10px;overflow:hidden;background:var(--track)}
+.sg{display:flex;align-items:center;justify-content:center;border:0;padding:0;margin:0;min-width:0;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:width .35s;overflow:hidden}
+span.sg{cursor:default}
+.sg.sel{box-shadow:inset 0 0 0 3px var(--ink)}
 header select.yearsel{width:auto;min-height:40px;height:40px;padding:0 30px 0 12px;border-radius:12px;font-weight:700;font-size:15px;
   color:#fff;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -248,10 +275,10 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
     </div>
   </div>
   <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" data-sec="ICS-I"   style="--t:#256b30;--tl:#86d493"><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ</span></button>
-    <button class="tab" role="tab" data-sec="ICS-II"  style="--t:#a85f00;--tl:#f2b45a"><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ</span></button>
-    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f;--tl:#9cc4f5"><b>ICS-III</b><em class="bdg hidden" id="bdg-ICS-III"></em><span>ក្រោយផល</span></button>
-    <button class="tab" role="tab" data-sec="FARMERS" style="--t:#6b3fa0;--tl:#cdb0f2"><b>Farmers</b><em class="bdg hidden" id="bdg-FARMERS"></em><span>បញ្ជីកសិករ</span></button>
+    <button class="tab" role="tab" data-sec="ICS-I"   style="--t:#256b30;--tl:#86d493"><i class="ti">🌱</i><b>ICS-I</b><em class="bdg hidden" id="bdg-ICS-I"></em><span>ដាំស្រូវ</span></button>
+    <button class="tab" role="tab" data-sec="ICS-II"  style="--t:#a85f00;--tl:#f2b45a"><i class="ti">🌾</i><b>ICS-II</b><em class="bdg hidden" id="bdg-ICS-II"></em><span>បោកស្រូវ</span></button>
+    <button class="tab" role="tab" data-sec="ICS-III" style="--t:#1f4f8f;--tl:#9cc4f5"><i class="ti">🔥</i><b>ICS-III</b><em class="bdg hidden" id="bdg-ICS-III"></em><span>ក្រោយផល</span></button>
+    <button class="tab" role="tab" data-sec="FARMERS" style="--t:#6b3fa0;--tl:#cdb0f2"><i class="ti">👨‍🌾</i><b>Farmers</b><em class="bdg hidden" id="bdg-FARMERS"></em><span>បញ្ជីកសិករ</span></button>
   </nav>
  </div>
 </header>
@@ -261,42 +288,42 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
   <section class="card" id="formCard">
     <div class="card-h"><span class="pill"></span><h2 id="formTitle">ICS-I</h2></div>
 
-    <div class="grp"><span class="n">1</span>ពេលវេលា និងទីតាំង <small>When &amp; where</small></div>
+    <div class="grp"><span class="n">1</span>📍 ពេលវេលា និងទីតាំង <small>When &amp; where</small></div>
     <div class="row">
       <div>
-        <label for="fDate">កាលបរិច្ឆេទ Date <em>*</em></label>
+        <label for="fDate">📅 កាលបរិច្ឆេទ Date <em>*</em></label>
         <input type="date" id="fDate">
       </div>
       <div>
-        <label for="fInspector">អ្នកត្រួតពិនិត្យ Inspector <em>*</em></label>
+        <label for="fInspector">🧑‍💼 អ្នកត្រួតពិនិត្យ Inspector <em>*</em></label>
         <select id="fInspector"></select>
       </div>
     </div>
     <div class="row">
       <div>
-        <label for="fIrpg">ក្រុមផលិត IRPG <em>*</em></label>
+        <label for="fIrpg">👥 ក្រុមផលិត IRPG <em>*</em></label>
         <select id="fIrpg"></select>
       </div>
       <div>
-        <label for="fVillage">ភូមិ Village <em>*</em></label>
+        <label for="fVillage">🏘️ ភូមិ Village <em>*</em></label>
         <select id="fVillage"></select>
       </div>
     </div>
 
-    <div class="grp"><span class="n">2</span>កសិករ <small>Farmer</small></div>
+    <div class="grp"><span class="n">2</span>👨‍🌾 កសិករ <small>Farmer</small></div>
     <button type="button" class="coll" style="margin-top:6px" data-coll="sf" aria-expanded="false"><span>🔍 ស្វែងរកកសិករ Search</span><span class="chev">▸</span></button>
     <div class="collbody hidden">
       <label for="fSearch" style="margin-top:8px"><small style="font-weight:400;color:var(--guide)">ID · ឈ្មោះប្តី · ឈ្មោះប្រពន្ធ</small></label>
       <input id="fSearch" type="search" autocomplete="off" placeholder="ស្វែងរក ID ឬឈ្មោះ…">
       <div class="sres hidden" id="searchRes"></div>
     </div>
-    <label for="fCode">លេខកូដគ្រួសារ Family_ID <em>*</em></label>
+    <label for="fCode">🆔 លេខកូដគ្រួសារ Family_ID <em>*</em></label>
     <input id="fCode" list="codeList" autocomplete="off" autocapitalize="characters" placeholder="ឧ. BM001 ឬ 1">
     <datalist id="codeList"></datalist>
     <div class="farmer" id="farmerBox"><span class="none">ជ្រើសភូមិ រួចវាយ Family_ID</span></div>
 
     <div id="statusWrap">
-      <label for="fStatus">ស្ថានភាពកសិករ Farmer Status <em>*</em></label>
+      <label for="fStatus">🏷️ ស្ថានភាពកសិករ Farmer Status <em>*</em></label>
       <select id="fStatus">
         <option value="">— ជ្រើសរើស —</option>
         <option value="Existing farmer">Existing farmer / សមាជិកចាស់</option>
@@ -305,8 +332,8 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       </select>
     </div>
 
-    <div class="grp"><span class="n">3</span>លទ្ធផលត្រួតពិនិត្យ <small>Inspection result</small></div>
-    <label style="margin-top:6px">Compliance <em>*</em></label>
+    <div class="grp"><span class="n">3</span>📋 លទ្ធផលត្រួតពិនិត្យ <small>Inspection result</small></div>
+    <label style="margin-top:6px">✅ Compliance <em>*</em></label>
     <div class="seg" id="segCompl"></div>
 
     <div id="extraWrap">
@@ -315,12 +342,12 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
     </div>
 
     <div id="noteWrap" class="hidden">
-      <label for="fNote">កំណត់សម្គាល់ Note</label>
+      <label for="fNote">📝 កំណត់សម្គាល់ Note</label>
       <textarea id="fNote" rows="3" placeholder="មូលហេតុ Compliance No / Resign"></textarea>
     </div>
 
     <div class="btns">
-      <button class="btn primary" id="saveBtn">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button>
+      <button class="btn primary" id="saveBtn">💾 រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button>
     </div>
     <p class="hint">ទិន្នន័យនៅក្នុងទូរស័ព្ទសិន។ ពេលមានអ៊ីនធឺណិត ទើបចុច Submit។</p>
   </section>
@@ -328,7 +355,7 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 
   <!-- ===== Farmers_List dashboard ===== -->
   <section class="card hidden" id="flDash">
-    <div class="card-h"><span class="pill"></span><h2>Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2></div>
+    <div class="card-h"><span class="pill"></span><h2>📋 Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2></div>
     <button type="button" class="coll" data-coll="sfd" aria-expanded="false"><span>🔍 ស្វែងរកកសិករ Search</span><span class="chev">▸</span></button>
     <div class="collbody hidden">
       <label for="fdSearch" class="srch-l"><small>ID · Hus_Eng · Wif_Eng — មើលថាធ្វើរួចឬនៅ</small></label>
@@ -340,16 +367,16 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       <div><label for="fdVillage">Village</label><select id="fdVillage"></select></div>
     </div>
     <div class="stats">
-      <button class="stat" data-fk="total"><b id="fTotal">0</b><span>កសិករសរុប Total</span></button>
-      <button class="stat" data-fk="yes"><b id="fYes">0</b><span>ជាប់ ICS-I Yes</span></button>
-      <button class="stat" data-fk="elig"><b id="fElig">0</b><span>បន្តឆ្នាំក្រោយ</span></button>
+      <button class="stat" data-fk="total"><b id="fTotal">0</b><span>👥 កសិករសរុប Total</span></button>
+      <button class="stat" data-fk="yes"><b id="fYes">0</b><span>✅ ជាប់ ICS-I Yes</span></button>
+      <button class="stat" data-fk="elig"><b id="fElig">0</b><span>🚀 បន្តឆ្នាំក្រោយ</span></button>
     </div>
     <div class="stats s2">
-      <button class="stat" data-fk="no"><b id="fNo">0</b><span>No</span></button>
-      <button class="stat" data-fk="resign"><b id="fResign">0</b><span>Resign</span></button>
-      <button class="stat" data-fk="left"><b id="fLeft">0</b><span>មិនទាន់ត្រួតពិនិត្យ</span></button>
+      <button class="stat" data-fk="no"><b id="fNo">0</b><span>❌ No</span></button>
+      <button class="stat" data-fk="resign"><b id="fResign">0</b><span>🚪 Resign</span></button>
+      <button class="stat" data-fk="left"><b id="fLeft">0</b><span>⏳ មិនទាន់ត្រួតពិនិត្យ</span></button>
     </div>
-    <p class="hint">"ជាប់ ICS-I" = Compliance Yes (Sheet ICS-I) — មានតែកសិករជាប់ ICS-I ទេដែលអាចបន្ត ICS-II → ICS-III។ "No / Resign" ពី Sheet NC/Resign។ "បន្តឆ្នាំក្រោយ" = ជាប់ ICS-III (Compliance = Yes) អាច Export ទៅបញ្ជីឆ្នាំបន្ទាប់។ ចុចលើលេខ ដើម្បីមើលឈ្មោះ។</p>
+    <div class="chart" id="flChart"></div>
     <div id="flVillages"></div>
     <div id="flLevels"></div>
     <div class="detail hidden" id="flDetail" tabindex="-1">
@@ -363,10 +390,9 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 
   <!-- ===== Export ICS-III -> next year ===== -->
   <section class="card hidden" id="flExport">
-    <div class="card-h"><span class="pill"></span><h2>Export ICS-III → Farmers_List <small>ផ្ទេរកសិករចូលឆ្នាំបន្ទាប់</small></h2></div>
+    <div class="card-h"><span class="pill"></span><h2>📦 Export ICS-III → Farmers_List <small>ផ្ទេរកសិករចូលឆ្នាំបន្ទាប់</small></h2></div>
     <label for="toYear">Export to year <em>*</em></label>
     <select id="toYear"></select>
-    <p class="hint">កសិករដែល Compliance = Yes ក្នុង ICS-III នឹងក្លាយជា "Existing farmer" ក្នុង Sheet ឆ្នាំបន្ទាប់ ហើយកម្រិតឡើងមួយជំហាន។ ចុច Export ម្តងទៀតមិនបង្កើតស្ទួនទេ។</p>
     <div id="exPrev"></div>
     <div class="btns"><button class="btn primary" id="exportBtn">Export</button></div>
     <div class="farmer exres hidden" id="exResult"></div>
@@ -375,8 +401,8 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 <div class="col" id="colR">
   <!-- ===== New registration ===== -->
   <section class="card hidden" id="flReg">
-    <div class="card-h"><span class="pill"></span><h2>New Registration <small>ចុះឈ្មោះកសិករថ្មី → <b id="regYearLbl">—</b></small></h2></div>
-    <button type="button" class="coll" id="regBtn" data-coll="reg" aria-expanded="false"><span>បើកទម្រង់ចុះឈ្មោះ Open form</span><span class="chev">▸</span></button>
+    <div class="card-h"><span class="pill"></span><h2>✍️ New Registration <small>ចុះឈ្មោះកសិករថ្មី → <b id="regYearLbl">—</b></small></h2></div>
+    <button type="button" class="coll" id="regBtn" data-coll="reg" aria-expanded="false"><span>➕ បើកទម្រង់ចុះឈ្មោះ Open form</span><span class="chev">▸</span></button>
     <div class="collbody hidden" id="regBody">
     <div class="row">
       <div><label for="rIrpg">ក្រុមផលិត IRPG <em>*</em></label><select id="rIrpg"></select></div>
@@ -398,12 +424,12 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       <div><label for="rLevel">កម្រិត Level <em>*</em></label><select id="rLevel"></select></div>
     </div>
     <p class="hint">ស្ថានភាព: New farmer (សមាជិកថ្មី)។</p>
-    <div class="btns"><button class="btn primary" id="regSave">រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button></div>
+    <div class="btns"><button class="btn primary" id="regSave">💾 រក្សាទុកក្នុងទូរស័ព្ទ · Save Offline</button></div>
     </div>
   </section>
 
   <section class="card" id="queueCard">
-    <div class="card-h"><span class="pill"></span><h2>រង់ចាំផ្ញើ <small>Waiting to submit (<span id="qCount">0</span>)</small></h2></div>
+    <div class="card-h"><span class="pill"></span><h2>📤 រង់ចាំផ្ញើ <small>Waiting to submit (<span id="qCount">0</span>)</small></h2></div>
     <div id="qList"><p class="hint">មិនមានទិន្នន័យរង់ចាំទេ។</p></div>
     <div class="btns">
       <button class="btn dark" id="submitBtn" disabled>Submit</button>
@@ -430,19 +456,16 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       </div>
     </div>
     <div class="stats">
-      <button class="stat" data-k="total"><b id="sTotal">0</b><span>សរុប Total</span></button>
-      <button class="stat" data-k="done"><b id="sDone">0</b><span>ធ្វើបាន Done</span></button>
-      <button class="stat" data-k="left"><b id="sLeft">0</b><span>នៅសល់ Left</span></button>
+      <button class="stat" data-k="total"><b id="sTotal">0</b><span>👥 សរុប Total</span></button>
+      <button class="stat" data-k="done"><b id="sDone">0</b><span>📝 ធ្វើបាន Done</span></button>
+      <button class="stat" data-k="left"><b id="sLeft">0</b><span>⏳ នៅសល់ Left</span></button>
     </div>
     <div class="stats s2 hidden" id="cStats">
-      <button class="stat" data-k="yes"><b id="sYes">0</b><span>ជាប់ Yes</span></button>
-      <button class="stat" data-k="no"><b id="sNo">0</b><span>No</span></button>
-      <button class="stat" data-k="resign"><b id="sResign">0</b><span>Resign</span></button>
+      <button class="stat" data-k="yes"><b id="sYes">0</b><span>✅ ជាប់ Yes</span></button>
+      <button class="stat" data-k="no"><b id="sNo">0</b><span>❌ No</span></button>
+      <button class="stat" data-k="resign"><b id="sResign">0</b><span>🚪 Resign</span></button>
     </div>
-    <p class="hint hidden" id="cHint">Yes = ពី Sheet ICS-I · No / Resign = ពី Sheet NC/Resign (រាប់តែទិន្នន័យដែលបាន Submit រួច)។</p>
-    <div class="bar-t"><i id="barFill" style="width:0%"></i></div>
-    <p class="pct" id="pct">0%</p>
-    <p class="hint" id="tapHint">ចុចលើលេខ ដើម្បីមើលឈ្មោះកសិករ។</p>
+    <div class="chart" id="dChart"></div>
     <div id="byVillage"></div>
     <div class="detail hidden" id="detail" tabindex="-1">
       <div class="dh"><b id="dTitle"></b><button id="dClose" aria-label="Close">&times;</button></div>
@@ -642,7 +665,7 @@ function doneSet(sec) {
 /* ---------- form ---------- */
 function mkSeg(el, opts, key, onChange) {
   el.innerHTML = opts.map(function (o) {
-    return '<button type="button" data-v="' + o + '" class="' + (form[key] === o ? 'on' : '') + '">' + o + '</button>';
+    return '<button type="button" data-v="' + o + '" class="' + (form[key] === o ? 'on' : '') + '">' + (SEGI[o] || '') + o + '</button>';
   }).join('');
   Array.from(el.children).forEach(function (b) {
     b.onclick = function () {
@@ -764,7 +787,7 @@ function applySection() {
   ['formCard', 'dashCard'].forEach(function (id) { $(id).classList.toggle('hidden', fl); });
   ['flDash', 'flExport', 'flReg'].forEach(function (id) { $(id).classList.toggle('hidden', !fl); });
   if (fl) { flDetail = null; renderFarmers(); renderQueue(); return; }
-  $('formTitle').textContent = TITLES[cur];
+  $('formTitle').textContent = (ICON[cur] || '') + ' ' + TITLES[cur];
   $('statusWrap').classList.toggle('hidden', cur !== 'ICS-I');
   $('extraLabel').innerHTML = s.extraName + ' <em>*</em>';
 
@@ -871,7 +894,7 @@ function updateNet() {
   $('cfgBtn').classList.toggle('need', !apiUrl);
   var btn = $('submitBtn');
   var n = qMine().length;
-  btn.textContent = 'Submit ' + (cur === 'FARMERS' ? 'Registration' : cur) + (n ? ' (' + n + ')' : '');
+  btn.textContent = '📤 Submit ' + (cur === 'FARMERS' ? 'Registration' : cur) + (n ? ' (' + n + ')' : '');
   btn.disabled = !online || !n || submitting;
   var hint = $('submitHint');
   if (!apiUrl) hint.textContent = 'មិនទាន់ដាក់ Web App URL — ចុចប៊ូតុង ⚙ ខាងលើ។';
@@ -938,8 +961,55 @@ function setApi() {
   updateNet(); if (apiUrl) sync(false);
 }
 
+/* ---------- graphics ---------- */
+var COL = { yes: '#2f9e55', no: '#d9534f', resign: '#6b7a8f', left: '#e9a23b', pend: '#a8d5ad', elig: '#8e5bd0' };
+var ICON = { 'ICS-I': '🌱', 'ICS-II': '🌾', 'ICS-III': '🔥', FARMERS: '👨‍🌾' };
+var SEGI = { Yes: '✅ ', No: '❌ ', Resign: '🚪 ', Fallow: '🟡 ' };
+function donutSvg(segs, total, big, small) {
+  var R = 46, C = 2 * Math.PI * R, off = 0, arcs = '';
+  segs.forEach(function (s) {
+    if (!s.n || !total) return;
+    var len = C * s.n / total;
+    arcs += '<circle r="' + R + '" cx="60" cy="60" fill="none" style="stroke:' + s.color + '" stroke-width="16" stroke-dasharray="' +
+      len.toFixed(2) + ' ' + (C - len).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '" transform="rotate(-90 60 60)"/>';
+    off += len;
+  });
+  return '<svg viewBox="0 0 120 120" class="donut" role="img"><circle r="' + R + '" cx="60" cy="60" fill="none" stroke-width="16" style="stroke:var(--track)"/>' + arcs +
+    '<text x="60" y="63" text-anchor="middle" class="dn-b">' + big + '</text><text x="60" y="80" text-anchor="middle" class="dn-s">' + small + '</text></svg>';
+}
+function chartHtml(segs, total, big, small, extra) {
+  var rows = segs.concat(extra || []).filter(function (s) { return s.n || !s.z; });
+  return donutSvg(segs, total, big, small) + '<ul class="dl">' + rows.map(function (s) {
+    return '<li><i style="background:' + s.color + '"></i><span>' + s.label + '</span><b>' + s.n + '</b></li>';
+  }).join('') + '</ul>';
+}
+function barLegend(items) {
+  return '<div class="bl">' + items.map(function (i) { return '<span><i class="' + i[0] + '"></i>' + i[1] + '</span>'; }).join('') + '</div>';
+}
+function segHtml(attr, kind, n, tot, cls, o, sel) {
+  if (!n || !tot) return '';
+  var w = n * 100 / tot;
+  return '<button type="button" class="sg ' + cls + (sel ? ' sel' : '') + '" style="width:' + w.toFixed(2) + '%" ' + attr + '="' + kind + '"' +
+    (o.lvl != null ? ' data-lv="' + esc(o.lvl) + '"' : '') + ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '">' + (w >= 9 ? n : '') + '</button>';
+}
+function dashRow(r, isI) {
+  var o = { irpg: r.irpg, village: r.village };
+  function sl(k) { return !!detail && detail.kind === k && detail.irpg === r.irpg && detail.village === r.village; }
+  var pct = r.t ? Math.round(r.d * 100 / r.t) : 0, oth = r.d - r.y - r.n, segs;
+  if (isI) {
+    segs = segHtml('data-k', 'yes', r.y, r.t, 'c-yes', o, sl('yes')) + segHtml('data-k', 'nr', r.n, r.t, 'c-no', o, sl('nr')) +
+      (oth > 0 ? '<span class="sg c-pend" style="width:' + (oth * 100 / r.t).toFixed(2) + '%"></span>' : '') +
+      segHtml('data-k', 'left', r.t - r.d, r.t, 'c-left', o, sl('left'));
+  } else {
+    segs = segHtml('data-k', 'done', r.d, r.t, 'c-done', o, sl('done')) + segHtml('data-k', 'left', r.t - r.d, r.t, 'c-left', o, sl('left'));
+  }
+  return '<div class="vr"><button type="button" class="vh' + (sl('total') ? ' sel' : '') + '" data-k="total" data-i="' + esc(r.irpg) + '" data-v="' + esc(r.village) + '"><span>' +
+    esc(r.irpg) + ' · ' + esc(r.village) + '</span><b>' + r.d + '/' + r.t + ' · ' + pct + '%</b></button><div class="vb">' + segs + '</div></div>';
+}
+
 /* ---------- dashboard ---------- */
 function renderDash() {
+
   var list = sourceList(cur), done = doneSet(cur);
   fillSelect($('dIrpg'), uniqSorted(list.map(function (x) { return x.irpg; })), 'ទាំងអស់ · All', dash.irpg);
   dash.irpg = $('dIrpg').value;
@@ -951,16 +1021,24 @@ function renderDash() {
   var total = f.length;
   var dn = f.filter(function (x) { return done.has(up(x.code)); }).length;
   var left = total - dn, pct = total ? Math.round(dn * 100 / total) : 0;
-  $('dashTitle').textContent = 'របាយការណ៍ ' + cur + ' · Progress';
+  $('dashTitle').textContent = '📊 របាយការណ៍ ' + cur + ' · Progress';
   $('sTotal').textContent = total; $('sDone').textContent = dn; $('sLeft').textContent = left;
-  $('barFill').style.width = pct + '%'; $('pct').textContent = pct + '%';
   var isI = cur === 'ICS-I', c1 = isI ? ics1Map() : null;
-  $('cStats').classList.toggle('hidden', !isI); $('cHint').classList.toggle('hidden', !isI);
+  $('cStats').classList.toggle('hidden', !isI);
   if (isI) {
     var cy = 0, cn = 0, cr = 0;
     f.forEach(function (x) { var k = cls1(c1, x.code); if (k === 'yes') cy++; else if (k === 'no') cn++; else if (k === 'resign') cr++; });
     $('sYes').textContent = cy; $('sNo').textContent = cn; $('sResign').textContent = cr;
   }
+
+  var segsD;
+  if (isI) {
+    segsD = [{ n: cy, color: COL.yes, label: '✅ Yes' }, { n: cn, color: COL.no, label: '❌ No' }, { n: cr, color: COL.resign, label: '🚪 Resign' },
+      { n: Math.max(0, dn - cy - cn - cr), color: COL.pend, label: '📤 រង់ចាំ', z: 1 }, { n: left, color: COL.left, label: '⏳ សល់' }];
+  } else {
+    segsD = [{ n: dn, color: 'var(--c)', label: '✅ ធ្វើបាន' }, { n: left, color: COL.left, label: '⏳ សល់' }];
+  }
+  $('dChart').innerHTML = total ? chartHtml(segsD, total, pct + '%', 'ធ្វើបាន') : '';
 
   var by = $('byVillage');
   if (!dash.village && total) {
@@ -972,18 +1050,8 @@ function renderDash() {
       if (isI) { var kk = cls1(c1, x.code); if (kk === 'yes') g[k].y++; else if (kk === 'no' || kk === 'resign') g[k].n++; }
     });
     var rows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
-    if (isI) {
-      by.innerHTML = '<table class="t5"><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>Yes</th><th>No/<br>Resign</th><th>សល់</th></tr></thead><tbody>' +
-        rows.map(function (r) {
-          return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td>' + numBtn(r.y, 'yes', r) + '</td><td>' + numBtn(r.n, 'nr', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
-        }).join('') + '</tbody></table>';
-    } else {
-      by.innerHTML = '<table><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>សល់</th></tr></thead><tbody>' +
-        rows.map(function (r) {
-          return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
-        }).join('') + '</tbody></table>';
-    }
-    by.innerHTML = collapsible('vil', 'តាមភូមិ By village', rows.length, by.innerHTML);
+    var lg = barLegend(isI ? [['c-yes', 'Yes'], ['c-no', 'No / Resign'], ['c-left', 'សល់']] : [['c-done', 'ធ្វើបាន'], ['c-left', 'សល់']]);
+    by.innerHTML = collapsible('vil', '🏘️ តាមភូមិ By village', rows.length, lg + rows.map(function (r) { return dashRow(r, isI); }).join(''));
   } else if (!total) {
     by.innerHTML = '<p class="hint">' + (cur === 'ICS-I' ? 'ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។'
       : 'មិនទាន់មានកសិករ Compliance = Yes ក្នុង ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' ទេ។') + '</p>';
@@ -991,10 +1059,6 @@ function renderDash() {
 
   renderDetail(list, done);
   renderTrack('dSearch', 'dSearchRes');
-}
-function numBtn(n, kind, r) {
-  return '<button class="num' + (n ? '' : ' zero') + (detail && detail.kind === kind && detail.irpg === r.irpg && detail.village === r.village ? ' sel' : '') +
-    '" data-k="' + kind + '" data-i="' + esc(r.irpg) + '" data-v="' + esc(r.village) + '"' + (n ? '' : ' disabled') + '>' + n + '</button>';
 }
 function recInfo(sec) {
   var recs = sec === 'ICS-I' ? data.ics1.concat(data.nc) : sec === 'ICS-II' ? data.ics2 : data.ics3;
@@ -1005,7 +1069,6 @@ function recInfo(sec) {
 }
 function renderDetail(list, done) {
   var box = $('detail');
-  $('tapHint').classList.toggle('hidden', !!detail);
   document.querySelectorAll('button.stat[data-k]').forEach(function (b) {
     b.classList.toggle('sel', !!detail && detail.kind === b.dataset.k && detail.fromTile);
   });
@@ -1141,14 +1204,6 @@ function eligibleSet() {
   return s;
 }
 function lvLabel(k) { return k ? LV[k].label : 'មិនស្គាល់ Other'; }
-function flBtn(n, kind, o) {
-  var lv = o.lvl == null ? null : o.lvl;
-  var sel = flDetail && !flDetail.fromTile && flDetail.kind === kind && flDetail.lvl === lv &&
-            (flDetail.irpg || '') === (o.irpg || '') && (flDetail.village || '') === (o.village || '');
-  return '<button class="num' + (n ? '' : ' zero') + (sel ? ' sel' : '') + '" data-fk="' + kind + '"' +
-    (lv !== null ? ' data-lv="' + esc(lv) + '"' : '') + ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '"' +
-    (n ? '' : ' disabled') + '>' + n + '</button>';
-}
 function tally(items, c1, elig) {
   var c = { t: items.length, y: 0, n: 0, r: 0, e: 0 };
   items.forEach(function (x) {
@@ -1158,12 +1213,18 @@ function tally(items, c1, elig) {
   });
   return c;
 }
-function flTable(head, rows) {
-  return '<table class="t5"><thead><tr><th>' + head + '</th><th>សរុប</th><th>Yes</th><th>No/<br>Resign</th><th>បន្ត</th></tr></thead><tbody>' +
-    rows.map(function (r) {
-      return '<tr><td>' + r.label + '</td><td>' + flBtn(r.c.t, 'total', r.o) + '</td><td>' + flBtn(r.c.y, 'yes', r.o) + '</td><td>' +
-        flBtn(r.c.n + r.c.r, 'nr', r.o) + '</td><td>' + flBtn(r.c.e, 'elig', r.o) + '</td></tr>';
-    }).join('') + '</tbody></table>';
+function flRow(label, items, c1, elig, o) {
+  var c = tally(items, c1, elig), left = c.t - c.y - c.n - c.r, lv = o.lvl == null ? null : o.lvl;
+  function sl(k) {
+    return !!flDetail && !flDetail.fromTile && flDetail.kind === k && flDetail.lvl === lv &&
+      (flDetail.irpg || '') === (o.irpg || '') && (flDetail.village || '') === (o.village || '');
+  }
+  var at = ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '"' + (lv !== null ? ' data-lv="' + esc(lv) + '"' : '');
+  return '<div class="vr"><div class="vhw"><button type="button" class="vh' + (sl('total') ? ' sel' : '') + '" data-fk="total"' + at + '><span>' + label + '</span><b>' +
+    c.t + ' · ' + Math.round(c.y * 100 / Math.max(1, c.t)) + '%</b></button>' +
+    (c.e ? '<button type="button" class="vc' + (sl('elig') ? ' sel' : '') + '" data-fk="elig"' + at + '>🚀 ' + c.e + '</button>' : '') +
+    '</div><div class="vb">' + segHtml('data-fk', 'yes', c.y, c.t, 'c-yes', o, sl('yes')) + segHtml('data-fk', 'no', c.n, c.t, 'c-no', o, sl('no')) +
+    segHtml('data-fk', 'resign', c.r, c.t, 'c-rs', o, sl('resign')) + segHtml('data-fk', 'left', left, c.t, 'c-left', o, sl('left')) + '</div></div>';
 }
 function renderFarmers() {
   $('flYearLbl').textContent = 'បញ្ជីកសិករឆ្នាំ ' + year;
@@ -1181,7 +1242,13 @@ function renderFlDash() {
   $('fTotal').textContent = c.t; $('fYes').textContent = c.y; $('fElig').textContent = c.e;
   $('fNo').textContent = c.n; $('fResign').textContent = c.r; $('fLeft').textContent = c.t - c.y - c.n - c.r;
 
-  // IRPG · Village table (same idea as the ICS-I report)
+  $('flChart').innerHTML = f.length ? chartHtml(
+    [{ n: c.y, color: COL.yes, label: '✅ Yes' }, { n: c.n, color: COL.no, label: '❌ No' }, { n: c.r, color: COL.resign, label: '🚪 Resign' },
+     { n: c.t - c.y - c.n - c.r, color: COL.left, label: '⏳ មិនទាន់ត្រួតពិនិត្យ' }],
+    f.length, Math.round(c.y * 100 / f.length) + '%', 'ជាប់ ICS-I',
+    [{ n: c.e, color: COL.elig, label: '🚀 បន្តឆ្នាំក្រោយ' }]) : '';
+  var flLg = barLegend([['c-yes', 'Yes'], ['c-no', 'No'], ['c-rs', 'Resign'], ['c-left', 'មិនទាន់ត្រួតពិនិត្យ']]);
+
   var g = {};
   f.forEach(function (x) {
     var k = x.irpg + '\u0000' + x.village;
@@ -1190,17 +1257,18 @@ function renderFlDash() {
   });
   var vrows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
   $('flVillages').innerHTML = (!fdash.village && vrows.length)
-    ? collapsible('flv', 'តាមភូមិ By village', vrows.length, flTable('IRPG · Village', vrows.map(function (r) {
-        return { label: esc(r.irpg) + ' · ' + esc(r.village), c: tally(r.items, c1, elig), o: { irpg: r.irpg, village: r.village } };
-      })))
+    ? collapsible('flv', '🏘️ តាមភូមិ By village', vrows.length, flLg + vrows.map(function (r) {
+        return flRow(esc(r.irpg) + ' · ' + esc(r.village), r.items, c1, elig, { irpg: r.irpg, village: r.village });
+      }).join(''))
     : '';
 
-  // Level table
-  var rows = LV_ORDER.concat(['']).map(function (k) {
-    var items = f.filter(function (x) { return classifyLevel(x.level) === k; });
-    return { label: esc(lvLabel(k)), c: tally(items, c1, elig), o: { lvl: k } };
-  }).filter(function (r) { return r.c.t; });
-  $('flLevels').innerHTML = rows.length ? collapsible('fll', 'តាមកម្រិត By level', rows.length, flTable('កម្រិត Level', rows))
+  var lrows = LV_ORDER.concat(['']).map(function (k) {
+    return { k: k, items: f.filter(function (x) { return classifyLevel(x.level) === k; }) };
+  }).filter(function (r) { return r.items.length; });
+  $('flLevels').innerHTML = lrows.length
+    ? collapsible('fll', '🪜 តាមកម្រិត By level', lrows.length, flLg + lrows.map(function (r) {
+        return flRow(esc(lvLabel(r.k)), r.items, c1, elig, { lvl: r.k });
+      }).join(''))
     : '<p class="hint">មិនទាន់មានទិន្នន័យ — ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។</p>';
 
   document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
@@ -1267,7 +1335,7 @@ function renderExport() {
   var rows = LV_ORDER.concat(['?']).filter(function (k) { return tr[k]; });
   var html;
   if (!toYear) html = '<p class="hint warn">មិនមានឆ្នាំបន្ទាប់ទេ — បន្ថែមឆ្នាំថ្មីក្នុង YEARS (index.html) និង YEAR_FILES (Code.gs)។</p>';
-  else if (!list.length) html = '<p class="hint">មិនទាន់មានកសិករ ICS-III ដែល Compliance = Yes ទេ។ (ចុច ↻ ដើម្បីទាញទិន្នន័យថ្មី)</p>';
+  else if (!list.length) html = '';
   else html = '<table><thead><tr><th>កម្រិត ' + year + ' → ' + toYear + '</th><th>កសិករ</th></tr></thead><tbody>' +
     rows.map(function (k) {
       var txt = k === '?' ? 'មិនស្គាល់ (រក្សាដដែល)' : LV[k].label + ' → ' + LV[LV[k].next].label;
@@ -1275,7 +1343,7 @@ function renderExport() {
     }).join('') + '<tr><td><b>សរុប Total</b></td><td><b>' + list.length + '</b></td></tr></tbody></table>';
   $('exPrev').innerHTML = html;
   var b = $('exportBtn');
-  b.textContent = exporting ? 'កំពុង Export…' : (toYear ? 'Export ICS-III → ' + toYear + (list.length ? ' (' + list.length + ')' : '') : 'Export');
+  b.textContent = exporting ? 'កំពុង Export…' : (toYear ? '📦 Export ICS-III → ' + toYear + (list.length ? ' (' + list.length + ')' : '') : 'Export');
   b.disabled = !toYear || !list.length || !navigator.onLine || exporting;
 }
 async function doExport() {
@@ -1398,7 +1466,7 @@ function showDetail(d) {
   var box = $('detail'); if (!box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 $('byVillage').addEventListener('click', function (e) {
-  var b = e.target.closest('button.num'); if (!b || b.disabled) return;
+  var b = e.target.closest('button[data-k]'); if (!b || b.disabled) return;
   if (detail && detail.kind === b.dataset.k && detail.irpg === b.dataset.i && detail.village === b.dataset.v) { detail = null; renderDash(); return; }
   showDetail({ kind: b.dataset.k, irpg: b.dataset.i, village: b.dataset.v });
 });
@@ -1418,7 +1486,7 @@ document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
   };
 });
 function flTableClick(e) {
-  var b = e.target.closest('button.num'); if (!b || b.disabled) return;
+  var b = e.target.closest('button[data-fk]'); if (!b || b.disabled) return;
   var d = { kind: b.dataset.fk, lvl: b.dataset.lv === undefined ? null : b.dataset.lv, irpg: b.dataset.i || '', village: b.dataset.v || '' };
   if (flDetail && !flDetail.fromTile && flDetail.kind === d.kind && flDetail.lvl === d.lvl &&
       (flDetail.irpg || '') === d.irpg && (flDetail.village || '') === d.village) { flDetail = null; renderFlDash(); return; }
