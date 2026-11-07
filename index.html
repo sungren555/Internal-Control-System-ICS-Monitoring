@@ -203,6 +203,12 @@ table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
 table.t5 th,table.t5 td{padding:7px 2px}
 table.t5 button.num{min-width:36px;padding:2px 6px}
+.combo{position:relative}
+.opts{position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:4px;max-height:260px;overflow:auto;background:var(--card);border:1.5px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.opts button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line2);background:transparent;color:var(--ink);font:inherit;padding:12px 14px;min-height:46px;cursor:pointer}
+.opts button:last-child{border-bottom:0}
+.opts button:hover,.opts button:focus-visible{background:var(--c-soft)}
+.opts .no{padding:12px 14px;color:var(--guide)}
 .ti{display:block;font-style:normal;font-size:19px;line-height:1.15;margin-bottom:1px}
 .tab[aria-selected=false] .ti{opacity:.65}
 .chart{display:flex;align-items:center;gap:14px;margin:14px 0 6px}
@@ -296,7 +302,7 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       </div>
       <div>
         <label for="fInspector">🧑‍💼 អ្នកត្រួតពិនិត្យ Inspector <em>*</em></label>
-        <select id="fInspector"></select>
+        <div class="combo"><input id="fInspector" type="text" autocomplete="off" autocapitalize="words" placeholder="វាយឈ្មោះ ឬជ្រើស…"><div class="opts hidden" id="inspOpts"></div></div>
       </div>
     </div>
     <div class="row">
@@ -687,13 +693,44 @@ function inspectorList() {
   return fromSheet.length ? fromSheet : inspectors;
 }
 function fillInspectors() {
-  var sel = $('fInspector'), list = inspectorList();
-  var canAdd = !(data.inspectors && data.inspectors.length);
-  setOpts(sel, '<option value="">— ជ្រើសរើស —</option>' +
-    list.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('') +
-    (canAdd ? '<option value="__add">+ បន្ថែមឈ្មោះ Add inspector</option>' : ''));
-  sel.value = list.indexOf(form.inspector) >= 0 ? form.inspector : '';
-  form.inspector = sel.value;
+  var inp = $('fInspector'), list = inspectorList();
+  if (document.activeElement === inp) return;          // never disturb while the user is typing
+  inp.value = list.indexOf(form.inspector) >= 0 ? form.inspector : '';
+  form.inspector = inp.value;
+}
+var inspTyped = false;
+function inspMatches(q) {
+  var list = inspectorList(); q = q.trim().toLowerCase();
+  if (!q) return list.slice();
+  var a = [], b = [], c = [];
+  list.forEach(function (n) {
+    var l = n.toLowerCase();
+    if (l.indexOf(q) === 0) a.push(n);
+    else if (l.split(/\s+/).some(function (w) { return w.indexOf(q) === 0; })) b.push(n);
+    else if (l.indexOf(q) > 0) c.push(n);
+  });
+  return (a.length || b.length) ? a.concat(b) : c;
+}
+function showInsp() {
+  var m = inspMatches(inspTyped ? $('fInspector').value : ''), box = $('inspOpts');
+  box.innerHTML = m.length ? m.slice(0, 100).map(function (n) { return '<button type="button" data-n="' + esc(n) + '">' + esc(n) + '</button>'; }).join('')
+    : '<div class="no">រកមិនឃើញ</div>';
+  box.classList.remove('hidden');
+}
+function pickInsp(n) {
+  $('fInspector').value = n; form.inspector = n; inspTyped = false;
+  $('inspOpts').classList.add('hidden'); rememberSticky();
+}
+function commitInsp() {
+  var inp = $('fInspector'), v = inp.value.trim(), list = inspectorList();
+  var hit = list.filter(function (x) { return x.toLowerCase() === v.toLowerCase(); })[0];
+  if (hit) { inp.value = hit; form.inspector = hit; }
+  else if (!v) form.inspector = '';
+  else if (!(data.inspectors && data.inspectors.length)) {            // no inspector list in the sheet: allow adding a new name
+    if (inspectors.indexOf(v) < 0) { inspectors.push(v); store.set('ics_inspectors', inspectors); }
+    form.inspector = v;
+  } else inp.value = form.inspector || '';
+  $('inspOpts').classList.add('hidden'); rememberSticky();
 }
 function refreshIrpg() {
   var list = sourceList(cur);
@@ -1430,14 +1467,19 @@ document.querySelectorAll('.tab').forEach(function (t) {
   t.onclick = function () { if (cur === t.dataset.sec) return; cur = t.dataset.sec; store.set('ics_sec', cur); applySection(); window.scrollTo(0, 0); };
 });
 $('fDate').onchange = function () { form.date = this.value; rememberSticky(); };
-$('fInspector').onchange = function () {
-  if (this.value === '__add') {
-    var n = (prompt('ឈ្មោះ Inspector:') || '').trim();
-    if (n && inspectors.indexOf(n) < 0) { inspectors.push(n); store.set('ics_inspectors', inspectors); }
-    form.inspector = n; fillInspectors();
-  } else form.inspector = this.value;
-  rememberSticky();
+$('fInspector').onfocus = function () { inspTyped = false; this.select(); showInsp(); };
+$('fInspector').oninput = function () { inspTyped = true; showInsp(); };
+$('fInspector').onblur = function () { setTimeout(commitInsp, 250); };
+$('fInspector').onkeydown = function (e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  var m = inspMatches(inspTyped ? this.value : '');
+  if (m.length && inspTyped) pickInsp(m[0]); else commitInsp();
+  this.blur();
 };
+$('inspOpts').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-n]'); if (b) { pickInsp(b.dataset.n); $('fInspector').blur(); }
+});
 $('fIrpg').onchange = function () { form.irpg = this.value; form.village = ''; $('fCode').value = ''; refreshVillage(); rememberSticky(); };
 $('fVillage').onchange = function () { form.village = this.value; $('fCode').value = ''; refreshCodes(); rememberSticky(); };
 $('fCode').oninput = matchFarmer;
