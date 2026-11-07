@@ -983,28 +983,9 @@ function chartHtml(segs, total, big, small, extra) {
     return '<li><i style="background:' + s.color + '"></i><span>' + s.label + '</span><b>' + s.n + '</b></li>';
   }).join('') + '</ul>';
 }
-function barLegend(items) {
-  return '<div class="bl">' + items.map(function (i) { return '<span><i class="' + i[0] + '"></i>' + i[1] + '</span>'; }).join('') + '</div>';
-}
-function segHtml(attr, kind, n, tot, cls, o, sel) {
-  if (!n || !tot) return '';
-  var w = n * 100 / tot;
-  return '<button type="button" class="sg ' + cls + (sel ? ' sel' : '') + '" style="width:' + w.toFixed(2) + '%" ' + attr + '="' + kind + '"' +
-    (o.lvl != null ? ' data-lv="' + esc(o.lvl) + '"' : '') + ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '">' + (w >= 9 ? n : '') + '</button>';
-}
-function dashRow(r, isI) {
-  var o = { irpg: r.irpg, village: r.village };
-  function sl(k) { return !!detail && detail.kind === k && detail.irpg === r.irpg && detail.village === r.village; }
-  var pct = r.t ? Math.round(r.d * 100 / r.t) : 0, oth = r.d - r.y - r.n, segs;
-  if (isI) {
-    segs = segHtml('data-k', 'yes', r.y, r.t, 'c-yes', o, sl('yes')) + segHtml('data-k', 'nr', r.n, r.t, 'c-no', o, sl('nr')) +
-      (oth > 0 ? '<span class="sg c-pend" style="width:' + (oth * 100 / r.t).toFixed(2) + '%"></span>' : '') +
-      segHtml('data-k', 'left', r.t - r.d, r.t, 'c-left', o, sl('left'));
-  } else {
-    segs = segHtml('data-k', 'done', r.d, r.t, 'c-done', o, sl('done')) + segHtml('data-k', 'left', r.t - r.d, r.t, 'c-left', o, sl('left'));
-  }
-  return '<div class="vr"><button type="button" class="vh' + (sl('total') ? ' sel' : '') + '" data-k="total" data-i="' + esc(r.irpg) + '" data-v="' + esc(r.village) + '"><span>' +
-    esc(r.irpg) + ' · ' + esc(r.village) + '</span><b>' + r.d + '/' + r.t + ' · ' + pct + '%</b></button><div class="vb">' + segs + '</div></div>';
+function numBtn(n, kind, r) {
+  return '<button class="num' + (n ? '' : ' zero') + (detail && detail.kind === kind && detail.irpg === r.irpg && detail.village === r.village ? ' sel' : '') +
+    '" data-k="' + kind + '" data-i="' + esc(r.irpg) + '" data-v="' + esc(r.village) + '"' + (n ? '' : ' disabled') + '>' + n + '</button>';
 }
 
 /* ---------- dashboard ---------- */
@@ -1050,8 +1031,19 @@ function renderDash() {
       if (isI) { var kk = cls1(c1, x.code); if (kk === 'yes') g[k].y++; else if (kk === 'no' || kk === 'resign') g[k].n++; }
     });
     var rows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
-    var lg = barLegend(isI ? [['c-yes', 'Yes'], ['c-no', 'No / Resign'], ['c-left', 'សល់']] : [['c-done', 'ធ្វើបាន'], ['c-left', 'សល់']]);
-    by.innerHTML = collapsible('vil', '🏘️ តាមភូមិ By village', rows.length, lg + rows.map(function (r) { return dashRow(r, isI); }).join(''));
+    var tbl;
+    if (isI) {
+      tbl = '<table class="t5"><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>Yes</th><th>No/<br>Resign</th><th>សល់</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td>' + numBtn(r.y, 'yes', r) + '</td><td>' + numBtn(r.n, 'nr', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    } else {
+      tbl = '<table><thead><tr><th>IRPG · Village</th><th>សរុប</th><th>ធ្វើបាន</th><th>សល់</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + esc(r.irpg) + ' · ' + esc(r.village) + '</td><td>' + numBtn(r.t, 'total', r) + '</td><td>' + numBtn(r.d, 'done', r) + '</td><td class="left">' + numBtn(r.t - r.d, 'left', r) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    by.innerHTML = collapsible('vil', '🏘️ តាមភូមិ By village', rows.length, tbl);
   } else if (!total) {
     by.innerHTML = '<p class="hint">' + (cur === 'ICS-I' ? 'ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។'
       : 'មិនទាន់មានកសិករ Compliance = Yes ក្នុង ' + (cur === 'ICS-II' ? 'ICS-I' : 'ICS-II') + ' ទេ។') + '</p>';
@@ -1213,18 +1205,20 @@ function tally(items, c1, elig) {
   });
   return c;
 }
-function flRow(label, items, c1, elig, o) {
-  var c = tally(items, c1, elig), left = c.t - c.y - c.n - c.r, lv = o.lvl == null ? null : o.lvl;
-  function sl(k) {
-    return !!flDetail && !flDetail.fromTile && flDetail.kind === k && flDetail.lvl === lv &&
-      (flDetail.irpg || '') === (o.irpg || '') && (flDetail.village || '') === (o.village || '');
-  }
-  var at = ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '"' + (lv !== null ? ' data-lv="' + esc(lv) + '"' : '');
-  return '<div class="vr"><div class="vhw"><button type="button" class="vh' + (sl('total') ? ' sel' : '') + '" data-fk="total"' + at + '><span>' + label + '</span><b>' +
-    c.t + ' · ' + Math.round(c.y * 100 / Math.max(1, c.t)) + '%</b></button>' +
-    (c.e ? '<button type="button" class="vc' + (sl('elig') ? ' sel' : '') + '" data-fk="elig"' + at + '>🚀 ' + c.e + '</button>' : '') +
-    '</div><div class="vb">' + segHtml('data-fk', 'yes', c.y, c.t, 'c-yes', o, sl('yes')) + segHtml('data-fk', 'no', c.n, c.t, 'c-no', o, sl('no')) +
-    segHtml('data-fk', 'resign', c.r, c.t, 'c-rs', o, sl('resign')) + segHtml('data-fk', 'left', left, c.t, 'c-left', o, sl('left')) + '</div></div>';
+function flBtn(n, kind, o) {
+  var lv = o.lvl == null ? null : o.lvl;
+  var sel = flDetail && !flDetail.fromTile && flDetail.kind === kind && flDetail.lvl === lv &&
+            (flDetail.irpg || '') === (o.irpg || '') && (flDetail.village || '') === (o.village || '');
+  return '<button class="num' + (n ? '' : ' zero') + (sel ? ' sel' : '') + '" data-fk="' + kind + '"' +
+    (lv !== null ? ' data-lv="' + esc(lv) + '"' : '') + ' data-i="' + esc(o.irpg || '') + '" data-v="' + esc(o.village || '') + '"' +
+    (n ? '' : ' disabled') + '>' + n + '</button>';
+}
+function flTable(head, rows) {
+  return '<table class="t5"><thead><tr><th>' + head + '</th><th>សរុប</th><th>Yes</th><th>No/<br>Resign</th><th>បន្ត</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      return '<tr><td>' + r.label + '</td><td>' + flBtn(r.c.t, 'total', r.o) + '</td><td>' + flBtn(r.c.y, 'yes', r.o) + '</td><td>' +
+        flBtn(r.c.n + r.c.r, 'nr', r.o) + '</td><td>' + flBtn(r.c.e, 'elig', r.o) + '</td></tr>';
+    }).join('') + '</tbody></table>';
 }
 function renderFarmers() {
   $('flYearLbl').textContent = 'បញ្ជីកសិករឆ្នាំ ' + year;
@@ -1247,8 +1241,6 @@ function renderFlDash() {
      { n: c.t - c.y - c.n - c.r, color: COL.left, label: '⏳ មិនទាន់ត្រួតពិនិត្យ' }],
     f.length, Math.round(c.y * 100 / f.length) + '%', 'ជាប់ ICS-I',
     [{ n: c.e, color: COL.elig, label: '🚀 បន្តឆ្នាំក្រោយ' }]) : '';
-  var flLg = barLegend([['c-yes', 'Yes'], ['c-no', 'No'], ['c-rs', 'Resign'], ['c-left', 'មិនទាន់ត្រួតពិនិត្យ']]);
-
   var g = {};
   f.forEach(function (x) {
     var k = x.irpg + '\u0000' + x.village;
@@ -1257,18 +1249,15 @@ function renderFlDash() {
   });
   var vrows = Object.keys(g).sort(function (a, b) { return a.localeCompare(b, undefined, { numeric: true }); }).map(function (k) { return g[k]; });
   $('flVillages').innerHTML = (!fdash.village && vrows.length)
-    ? collapsible('flv', '🏘️ តាមភូមិ By village', vrows.length, flLg + vrows.map(function (r) {
-        return flRow(esc(r.irpg) + ' · ' + esc(r.village), r.items, c1, elig, { irpg: r.irpg, village: r.village });
-      }).join(''))
+    ? collapsible('flv', '🏘️ តាមភូមិ By village', vrows.length, flTable('IRPG · Village', vrows.map(function (r) {
+        return { label: esc(r.irpg) + ' · ' + esc(r.village), c: tally(r.items, c1, elig), o: { irpg: r.irpg, village: r.village } };
+      })))
     : '';
-
   var lrows = LV_ORDER.concat(['']).map(function (k) {
-    return { k: k, items: f.filter(function (x) { return classifyLevel(x.level) === k; }) };
-  }).filter(function (r) { return r.items.length; });
-  $('flLevels').innerHTML = lrows.length
-    ? collapsible('fll', '🪜 តាមកម្រិត By level', lrows.length, flLg + lrows.map(function (r) {
-        return flRow(esc(lvLabel(r.k)), r.items, c1, elig, { lvl: r.k });
-      }).join(''))
+    var items = f.filter(function (x) { return classifyLevel(x.level) === k; });
+    return { label: esc(lvLabel(k)), c: tally(items, c1, elig), o: { lvl: k } };
+  }).filter(function (r) { return r.c.t; });
+  $('flLevels').innerHTML = lrows.length ? collapsible('fll', '🪜 តាមកម្រិត By level', lrows.length, flTable('កម្រិត Level', lrows))
     : '<p class="hint">មិនទាន់មានទិន្នន័យ — ចុចប៊ូតុង ↻ ដើម្បីទាញបញ្ជីកសិករ។</p>';
 
   document.querySelectorAll('button.stat[data-fk]').forEach(function (b) {
