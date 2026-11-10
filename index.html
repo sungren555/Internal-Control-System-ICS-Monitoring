@@ -203,6 +203,26 @@ table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
 table.t5 th,table.t5 td{padding:7px 2px}
 table.t5 button.num{min-width:36px;padding:2px 6px}
+.eye{border:0;background:var(--c);color:#fff;border-radius:99px;min-width:44px;height:34px;margin-left:8px;font-size:18px;cursor:pointer;vertical-align:middle}
+.eye[aria-expanded=true]{box-shadow:0 0 0 3px var(--c-line)}
+.eyebody{margin-top:10px;max-height:320px;overflow:auto;border-top:1px solid var(--c-line)}
+.pc{list-style:none;margin:0;padding:0}
+.pc li{padding:9px 0;border-bottom:1px dashed var(--c-line)}
+.pc li:last-child{border-bottom:0}
+.pc .pt{display:flex;justify-content:space-between;gap:8px;font-size:16px;color:var(--ink)}
+.pc .pt span{font-weight:700;color:var(--ct);white-space:nowrap}
+.pc small{display:block;margin-top:2px;font-size:13.5px;color:var(--guide);font-weight:400}
+.pc a{color:var(--ct)}
+.pbtn{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
+.lnk{border:0;background:none;padding:0;font:inherit;color:var(--ct);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.mapov{position:fixed;inset:0;z-index:2000;background:#000;display:flex;flex-direction:column}
+.maphd{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:var(--c);color:#fff}
+.maphd b{flex:1;min-width:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maphd button,.maphd a{border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:10px;min-width:44px;height:40px;font:inherit;font-size:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;text-decoration:none;cursor:pointer}
+.maphd a{font-size:13px;font-weight:700}
+#mapBox{flex:1;min-height:0;background:#222}
+.leaflet-tooltip.ptip{background:rgba(0,0,0,.6);color:#fff;border:0;box-shadow:none;font-weight:700;padding:1px 6px}
+.leaflet-tooltip.ptip:before{display:none}
 .combo{position:relative}
 .opts{position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:4px;max-height:260px;overflow:auto;background:var(--card);border:1.5px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .opts button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line2);background:transparent;color:var(--ink);font:inherit;padding:12px 14px;min-height:46px;cursor:pointer}
@@ -245,7 +265,7 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 .hint.warn{color:var(--no-t);font-weight:600}
 .exres{margin-top:12px}
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);
-  padding:12px 18px;border-radius:14px;font-size:15px;max-width:92%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  padding:12px 18px;border-radius:14px;font-size:15px;max-width:92%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:3000;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.show{opacity:1}
 @media (max-width:560px){
   #sheetBtn{display:none}
@@ -486,6 +506,16 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 
 <div id="toast" role="status" aria-live="polite"></div>
 
+<div id="mapOv" class="mapov hidden">
+  <div class="maphd">
+    <b id="mapTitle"></b>
+    <button type="button" id="mapBase" title="Satellite / Map">🗺️</button>
+    <button type="button" id="mapLoc" title="ទីតាំងខ្ញុំ">📍</button>
+    <a id="mapG" target="_blank" rel="noopener" class="hidden">G-Maps</a>
+    <button type="button" id="mapClose" title="បិទ">✕</button>
+  </div>
+  <div id="mapBox"></div>
+</div>
 <script>
 (function () {
 'use strict';
@@ -548,10 +578,11 @@ const store = {
 var apiUrl = API_URL || store.get('ics_api', '');
 var year = store.get('ics_year', YEARS[0]);
 if (YEARS.indexOf(year) < 0) year = YEARS[0];
-function emptyData() { return { farmers: [], inspectors: [], ics1: [], nc: [], ics2: [], ics3: [], time: null }; }
+function emptyData() { return { farmers: [], inspectors: [], ics1: [], nc: [], ics2: [], ics3: [], land: [], plots: [], time: null }; }
 function loadData(y) {
   var d = store.get('ics_data_' + y, null) || (y === YEARS[0] ? store.get('ics_data', null) : null) || emptyData();
   ['farmers', 'inspectors', 'ics1', 'nc', 'ics2', 'ics3'].forEach(function (k) { if (!d[k]) d[k] = []; });
+  d.land = store.get('ics_land_' + y, []); d.plots = store.get('ics_plots_' + y, []);   // kept in separate keys (can be large)
   return d;
 }
 var data = loadData(year);
@@ -773,6 +804,149 @@ function pickList(q, strict) {
   if (!left.length) return '<span class="none">កសិករក្នុងភូមិនេះ ត្រូវបានកត់ត្រារួចហើយទាំងអស់ ✓</span>';
   return items.length ? html : '';
 }
+/* ---------- parcels (ICS-I) and plots (ICS-II) with the 👁 button ---------- */
+var ixCache = {}, eyeOpen = {};
+function groupBy(name) {
+  var src = data[name] || [], c = ixCache[name];
+  if (!c || c.src !== src) {
+    var m = {};
+    src.forEach(function (r) { var k = up(r.code); (m[k] = m[k] || []).push(r); });
+    c = ixCache[name] = { src: src, m: m };
+  }
+  return c.m;
+}
+function numOf(v) { var n = parseFloat(String(v || '').replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+function fmtNum(n) { return String(Math.round(n * 100) / 100); }
+function parseGeo(g) {
+  var m = String(g || '').match(/(-?\d+(?:\.\d+)?)[\s,;]+(-?\d+(?:\.\d+)?)/);
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;     // [lat, lon]
+}
+function mapAttrs(r) {
+  return ' data-map="1" data-code="' + esc(r.code) + '" data-parcel="' + esc(r.parcel) + '" data-geo="' + esc(r.geo) + '" data-area="' + esc(r.area) + '"';
+}
+function geoBtn(r) {
+  var g = parseGeo(r.geo);
+  return g ? '<button type="button" class="lnk"' + mapAttrs(r) + '>📍 ' + esc(g[0] + ', ' + g[1]) + '</button>' : '';
+}
+
+/* ---------- parcel map (online satellite + polygon from parcels.geojson) ---------- */
+var PARCEL_URL = './parcels.geojson';   // GeoJSON (EPSG:4326) exported from QGIS, with Parcel_No + Farmily_ID
+var LEAF_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+var LEAF_JS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+var leafP = null, parcelP = null, map = null, mapLayers = null, baseSat = null, baseStreet = null, baseIsSat = true, meMark = null, mapBounds = null;
+function loadLeaflet() {
+  if (window.L) return Promise.resolve();
+  if (leafP) return leafP;
+  leafP = new Promise(function (ok, bad) {
+    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = LEAF_CSS; document.head.appendChild(l);
+    var sc = document.createElement('script'); sc.src = LEAF_JS; sc.onload = ok;
+    sc.onerror = function () { leafP = null; bad(new Error('leaflet')); };
+    document.head.appendChild(sc);
+  });
+  return leafP;
+}
+function pget(props, exact, part) {
+  var k, l, i;
+  for (k in props) { l = k.toLowerCase(); if (exact.indexOf(l) >= 0) return props[k]; }
+  for (k in props) { l = k.toLowerCase(); for (i = 0; i < part.length; i++) if (l.indexOf(part[i]) >= 0) return props[k]; }
+  return '';
+}
+function loadParcels() {
+  if (parcelP) return parcelP;
+  parcelP = fetch(PARCEL_URL).then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function (gj) {
+    var byKey = {}, byCode = {};
+    (gj.features || []).forEach(function (f) {
+      var p = f.properties || {};
+      var code = up(pget(p, ['farmily_id', 'family_id'], ['farmily', 'family']));
+      var no = String(pget(p, ['parcel_no'], ['parcel_n', 'parcelno'])).trim();
+      if (!code) return;
+      byKey[code + '|' + no] = f;
+      (byCode[code] = byCode[code] || []).push(f);
+    });
+    return { byKey: byKey, byCode: byCode };
+  }).catch(function (e) { parcelP = null; throw e; });
+  return parcelP;
+}
+function parcelNo(f) { return String(pget(f.properties || {}, ['parcel_no'], ['parcel_n', 'parcelno'])).trim(); }
+function openParcelMap(code, parcel, geo, area) {
+  $('mapOv').classList.remove('hidden');
+  $('mapTitle').textContent = code + ' · Parcel_No ' + parcel + (area ? ' · ' + area + ' ha' : '');
+  var g = parseGeo(geo), a = $('mapG');
+  a.classList.toggle('hidden', !g);
+  if (g) a.href = 'https://www.google.com/maps?q=' + g[0] + ',' + g[1];
+  loadLeaflet().then(function () {
+    return loadParcels().catch(function () { return null; });
+  }).then(function (idx) {
+    drawMap(code, parcel, g, idx);
+  }).catch(function () {
+    toast('ត្រូវការ Internet ដើម្បីបើកផែនទី');
+    closeMap();
+  });
+}
+function drawMap(code, parcel, g, idx) {
+  if (!map) {
+    map = L.map('mapBox', { zoomControl: true });
+    baseSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri' });
+    baseStreet = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
+    baseIsSat = true; baseSat.addTo(map);
+    map.on('locationfound', function (e) {
+      if (meMark) meMark.remove();
+      meMark = L.circleMarker(e.latlng, { radius: 8, color: '#fff', weight: 3, fillColor: '#1e88e5', fillOpacity: 1 }).addTo(map);
+      if (mapBounds) map.fitBounds(L.latLngBounds([e.latlng]).extend(mapBounds), { padding: [40, 40], maxZoom: 19 }); else map.setView(e.latlng, 18);
+    });
+    map.on('locationerror', function () { toast('រកទីតាំងរបស់អ្នកមិនបាន'); });
+  }
+  map.invalidateSize();
+  if (mapLayers) mapLayers.remove();
+  mapLayers = L.featureGroup().addTo(map);
+  var key = up(code), no = String(parcel).trim();
+  var f = idx && idx.byKey[key + '|' + no], sibs = (idx && idx.byCode[key]) || [];
+  sibs.forEach(function (s) {
+    if (s === f) return;
+    L.geoJSON(s, { style: { color: '#00e5ff', weight: 2, fillColor: '#00e5ff', fillOpacity: .12 } })
+      .bindTooltip(parcelNo(s), { permanent: true, direction: 'center', className: 'ptip' }).addTo(mapLayers);
+  });
+  mapBounds = null;
+  if (f) {
+    var gl = L.geoJSON(f, { style: { color: '#ffeb3b', weight: 3, fillColor: '#ffeb3b', fillOpacity: .22 } })
+      .bindTooltip(no, { permanent: true, direction: 'center', className: 'ptip' }).addTo(mapLayers);
+    mapBounds = gl.getBounds();
+    map.fitBounds(mapBounds, { padding: [50, 50], maxZoom: 19 });
+  } else if (g) {
+    L.circleMarker(g, { radius: 10, color: '#fff', weight: 3, fillColor: '#e53935', fillOpacity: 1 }).addTo(mapLayers);
+    mapBounds = L.latLngBounds([g]);
+    map.setView(g, 18);
+    toast(idx ? 'រកមិនឃើញរូបរាងដីនេះ — បង្ហាញជាចំណុច' : 'មិនទាន់មានឯកសាររូបរាងដី — បង្ហាញជាចំណុច');
+  } else {
+    toast('គ្មានទីតាំងសម្រាប់ក្បាលដីនេះ');
+  }
+}
+function closeMap() { $('mapOv').classList.add('hidden'); }
+
+function eyeBlock(kind, code) {
+  var rows = groupBy(kind)[up(code)] || [], land = kind === 'land';
+  var key = kind + ':' + up(code), open = !!eyeOpen[key];
+  var total = rows.reduce(function (t, r) { return t + numOf(land ? r.area : r.planted); }, 0);
+  var label = land ? '🗺️ ក្បាលដី Parcel' : '🌱 ចំណែកដាំ Plot';
+  var txt = rows.length + (land ? ' ក្បាល' : ' plot') + (total ? ' · ' + fmtNum(total) + ' ha' : '');
+  var row = '<dt>' + label + '</dt><dd>' + esc(txt) + (rows.length
+    ? ' <button type="button" class="eye" data-eye="' + kind + '" data-code="' + esc(code) + '" aria-expanded="' + open + '" title="មើលព័ត៌មានលម្អិត">👁</button>' : '') + '</dd>';
+  var body = '';
+  if (rows.length) {
+    body = '<div class="eyebody' + (open ? '' : ' hidden') + '"><ul class="pc">' + rows.map(function (r) {
+      if (land) {
+        return '<li><div class="pt"><button type="button" class="pbtn"' + mapAttrs(r) + '>🗺️ Parcel_No: ' + esc(r.parcel || '-') + '</button><span>' + esc(r.area || '-') + ' ha</span></div><small>' +
+          [esc(r.loc), esc(r.date || r.year), geoBtn(r)].filter(Boolean).join(' · ') + '</small></li>';
+      }
+      return '<li><div class="pt"><b>Plot ' + esc(r.plot || '-') + '</b><span>' + esc(r.planted || '-') + ' ha</span></div><small>' +
+        [esc(r.variety), esc(r.type), esc(r.status), r.yield ? 'ទិន្នផលរំពឹង ' + esc(r.yield) : ''].filter(Boolean).join(' · ') + '</small></li>';
+    }).join('') + '</ul></div>';
+  }
+  return { row: row, body: body };
+}
 function matchFarmer() {
   var v = up($('fCode').value);
   form.code = v; form.farmer = null;
@@ -792,11 +966,13 @@ function matchFarmer() {
   }
   form.farmer = hit;
   var isDone = doneSet(cur).has(up(hit.code));
+  var ex = cur === 'ICS-I' ? eyeBlock('land', hit.code) : cur === 'ICS-II' ? eyeBlock('plots', hit.code) : null;
   box.innerHTML = '<dl><dt>Family_ID</dt><dd>' + esc(hit.code) + '</dd>' +
     '<dt>ប្តី Husband</dt><dd>' + esc(hit.hus || '-') + '</dd>' +
     '<dt>ប្រពន្ធ Wife</dt><dd>' + esc(hit.wife || '-') + '</dd>' +
     '<dt>ឆ្នាំចូលរួម Year</dt><dd>' + esc(hit.yearJoin || '-') + '</dd>' +
-    (PREV_LABEL[cur] ? '<dt>' + PREV_LABEL[cur] + '</dt><dd><span class="tag ' + esc(hit.prev) + '" style="margin:0">' + esc(hit.prev || '-') + '</span></dd>' : '') + '</dl>' +
+    (PREV_LABEL[cur] ? '<dt>' + PREV_LABEL[cur] + '</dt><dd><span class="tag ' + esc(hit.prev) + '" style="margin:0">' + esc(hit.prev || '-') + '</span></dd>' : '') +
+    (ex ? ex.row : '') + '</dl>' + (ex ? ex.body : '') +
     (isDone ? '<div class="bad" style="margin-top:6px">បានកត់ត្រារួចហើយ · Already recorded</div>' : '');
   syncStatusField();
 }
@@ -973,8 +1149,9 @@ async function sync(quiet) {
     var res = await fetch(apiUrl + (apiUrl.indexOf('?') < 0 ? '?' : '&') + 'action=sync&year=' + y + '&t=' + Date.now(), { redirect: 'follow' });
     var j = await res.json();
     if (!j.ok) throw new Error(j.error || 'Server error');
-    var fresh = { farmers: j.farmers || [], inspectors: j.inspectors || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], time: j.time };
-    store.set('ics_data_' + y, fresh);
+    var fresh = { farmers: j.farmers || [], inspectors: j.inspectors || [], ics1: j.ics1 || [], nc: j.nc || [], ics2: j.ics2 || [], ics3: j.ics3 || [], land: j.land || [], plots: j.plots || [], time: j.time };
+    store.set('ics_data_' + y, Object.assign({}, fresh, { land: [], plots: [] }));
+    store.set('ics_land_' + y, fresh.land); store.set('ics_plots_' + y, fresh.plots);
     if (y === year) {
       data = fresh;
       showSyncInfo();
@@ -1483,7 +1660,25 @@ $('inspOpts').addEventListener('click', function (e) {
 $('fIrpg').onchange = function () { form.irpg = this.value; form.village = ''; $('fCode').value = ''; refreshVillage(); rememberSticky(); };
 $('fVillage').onchange = function () { form.village = this.value; $('fCode').value = ''; refreshCodes(); rememberSticky(); };
 $('fCode').oninput = matchFarmer;
+$('mapClose').onclick = closeMap;
+$('mapBase').onclick = function () {
+  if (!map) return;
+  if (baseIsSat) { map.removeLayer(baseSat); baseStreet.addTo(map); this.textContent = '🛰️'; }
+  else { map.removeLayer(baseStreet); baseSat.addTo(map); this.textContent = '🗺️'; }
+  baseIsSat = !baseIsSat;
+};
+$('mapLoc').onclick = function () { if (map) map.locate({ enableHighAccuracy: true, timeout: 15000 }); };
 $('farmerBox').addEventListener('click', function (e) {
+  var mb = e.target.closest('[data-map]');
+  if (mb) { openParcelMap(mb.dataset.code, mb.dataset.parcel, mb.dataset.geo, mb.dataset.area); return; }
+  var eb = e.target.closest('[data-eye]');
+  if (eb) {
+    var k = eb.dataset.eye + ':' + up(eb.dataset.code);
+    eyeOpen[k] = !eyeOpen[k];
+    eb.setAttribute('aria-expanded', eyeOpen[k] ? 'true' : 'false');
+    var body = $('farmerBox').querySelector('.eyebody'); if (body) body.classList.toggle('hidden', !eyeOpen[k]);
+    return;
+  }
   var b = e.target.closest('.pk'); if (!b) return;
   $('fCode').value = b.dataset.code; matchFarmer();
 });
