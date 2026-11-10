@@ -830,7 +830,7 @@ function geoBtn(r) {
 }
 
 /* ---------- parcel map (online satellite + polygon from parcels.geojson) ---------- */
-var PARCEL_URL = './parcels.geojson';   // GeoJSON (EPSG:4326) exported from QGIS, with Parcel_No + Farmily_ID
+var PARCEL_URLS = ['./Land_Mapped_2026.geojson', './parcels.geojson'];   // GeoJSON (EPSG:4326) from QGIS, with Parcel_No + Farmily_ID; first one found is used
 var LEAF_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
 var LEAF_JS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
 var leafP = null, parcelP = null, map = null, mapLayers = null, baseSat = null, baseStreet = null, baseIsSat = true, meMark = null, mapBounds = null;
@@ -851,12 +851,16 @@ function pget(props, exact, part) {
   for (k in props) { l = k.toLowerCase(); for (i = 0; i < part.length; i++) if (l.indexOf(part[i]) >= 0) return props[k]; }
   return '';
 }
-function loadParcels() {
-  if (parcelP) return parcelP;
-  parcelP = fetch(PARCEL_URL).then(function (r) {
+function fetchFirst(i) {
+  if (i >= PARCEL_URLS.length) return Promise.reject(new Error('no parcel file'));
+  return fetch(PARCEL_URLS[i]).then(function (r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
-  }).then(function (gj) {
+  }).catch(function () { return fetchFirst(i + 1); });
+}
+function loadParcels() {
+  if (parcelP) return parcelP;
+  parcelP = fetchFirst(0).then(function (gj) {
     var byKey = {}, byCode = {};
     (gj.features || []).forEach(function (f) {
       var p = f.properties || {};
