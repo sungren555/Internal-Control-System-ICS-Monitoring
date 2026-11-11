@@ -8,9 +8,10 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;700&display=swap" rel="stylesheet">
+<script>try{var t=localStorage.getItem("fl_theme");if(t!=="dark"&&t!=="light"){var i=JSON.parse(localStorage.getItem("ics_theme")||"null");t=(i==="dark"||i==="light")?i:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme="light"}</script>
 <style>
-:root{--bg:#f3f5ee;--surface:#fff;--ink:#1d2a1f;--muted:#5d6b5f;--line:#d5dccd;--rice:#b8860b;--rice-bg:#f6ecc9;--ce:#2f6f6a;--ce-bg:#d7ece9;--btn:#2b4a2f;--btnink:#fff;--err:#a33;--ok:#2b6b34}
-@media (prefers-color-scheme:dark){:root{--bg:#141a15;--surface:#1e271f;--ink:#e8eee5;--muted:#9fad9f;--line:#334034;--rice:#e3b94a;--rice-bg:#3a3217;--ce:#6cc2ba;--ce-bg:#1d3a37;--btn:#9bd09f;--btnink:#10200f;--err:#f08a8a;--ok:#8fd49a}}
+:root{color-scheme:light;--bg:#f3f5ee;--surface:#fff;--ink:#1d2a1f;--muted:#5d6b5f;--line:#d5dccd;--rice:#b8860b;--rice-bg:#f6ecc9;--ce:#2f6f6a;--ce-bg:#d7ece9;--btn:#2b4a2f;--btnink:#fff;--err:#a33;--ok:#2b6b34}
+:root[data-theme="dark"]{--bg:#141a15;--surface:#1e271f;--ink:#e8eee5;--muted:#9fad9f;--line:#334034;--rice:#e3b94a;--rice-bg:#3a3217;--ce:#6cc2ba;--ce-bg:#1d3a37;--btn:#9bd09f;--btnink:#10200f;--err:#f08a8a;--ok:#8fd49a;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Khmer",system-ui,sans-serif;line-height:1.7}
 main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
@@ -64,12 +65,14 @@ td.num,th.num{text-align:right;white-space:nowrap}
 .editing[hidden]{display:none}
 .bd{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:12px;padding:8px 0 4px}
 .bd h3{font-size:.98rem;margin:0 0 4px;padding:0 12px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ibtn{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;width:44px;height:44px;font-size:20px;cursor:pointer}
 @media(max-width:520px){.row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
-<h1>កំណត់ហេតុសកម្មភាពចុះ Field</h1>
+<div class="top"><h1>កំណត់ហេតុសកម្មភាពចុះ Field</h1><button type="button" class="ibtn" id="theme" aria-label="Dark / Light mode"></button></div>
 <p class="sub">ទិន្នន័យបុគ្គលិក និងសកម្មភាពទាញពី Google Sheet ហើយកំណត់ហេតុរក្សាទុកតាមផ្ទាំងខែ។</p>
 
 <div class="tabs">
@@ -86,6 +89,13 @@ td.num,th.num{text-align:right;white-space:nowrap}
 
 <div id="viewLog">
 <form id="f" novalidate>
+  <div>
+    <div style="font-weight:600;font-size:.92rem;margin-bottom:4px">អង្គភាព</div>
+    <div class="seg">
+      <div><input type="radio" name="org" id="o1" value="RP" checked><label for="o1" class="r">RP</label></div>
+      <div><input type="radio" name="org" id="o2" value="IRCC"><label for="o2" class="c">IRCC</label></div>
+    </div>
+  </div>
   <label>ឈ្មោះបុគ្គលិក<select id="staff" required></select></label>
   <div id="secInfo" class="sub" style="margin:-6px 0 0"></div>
   <div>
@@ -108,6 +118,8 @@ td.num,th.num{text-align:right;white-space:nowrap}
     <label>ក្នុងនោះស្ត្រី (នាក់)<input type="number" id="wom" min="0" inputmode="numeric" placeholder="មិនបង្ខំ"></label>
   </div>
   <label>កំណត់ត្រា / លទ្ធផល<textarea id="note" rows="3"></textarea></label>
+  <label>⚠️ បញ្ហាដែលជួបប្រទះ<textarea id="prob" rows="3" placeholder="មិនបង្ខំ"></textarea></label>
+  <label>✅ ដំណោះស្រាយ / ជំហានបន្ទាប់<textarea id="sol" rows="3" placeholder="មិនបង្ខំ"></textarea></label>
   <div class="msg" id="msg" role="status"></div>
   <div class="editing" id="editBar" hidden></div>
   <div class="btns">
@@ -164,10 +176,29 @@ function loadConfig(){
   }).catch(function(e){if(!cfg)say("មិនអាចទាញទិន្នន័យពី Sheet បានទេ៖ "+e.message,"err")});
 }
 
+/* ===== អង្គភាព RP / IRCC ===== */
+// If the Apps Script sends s.org ("RP" / "IRCC") that is used. Otherwise this list (from the Staff/Work sheet) decides; unknown names are shown under both.
+var ORG_FALLBACK={RP:["SUNG REN","SAN TEAP","PHOUMA","THORN","DARA","SOTHY","EM CHANTHEA","VIENG TOET"],IRCC:["KALAYAN","KIMLY","SAMATH","VONGRITH","SREYPOV","SOPHEA"]};
+function orgOf(s){
+  var o=String(s.org||s.group||s.organization||s.organisation||"").toUpperCase();
+  if(o.indexOf("IRCC")>-1)return "IRCC";
+  if(/\bRP\b/.test(o))return "RP";
+  var n=String(s.name||"").toUpperCase().replace(/\s+/g," ").trim(),r="";
+  Object.keys(ORG_FALLBACK).forEach(function(k){ORG_FALLBACK[k].forEach(function(p){if(n.indexOf(p)===0)r=k})});
+  return r;
+}
+function curOrg(){return document.querySelector("input[name=org]:checked").value}
+function setOrg(o){var r=document.querySelector("input[name=org][value="+o+"]");if(r)r.checked=true}
 function fillStaff(){
   var keep=ls("fl_staff")||$("staff").value;
-  $("staff").innerHTML='<option value="">ជ្រើសរើសឈ្មោះ</option>'+cfg.staff.map(function(s){return '<option>'+esc(s.name)+'</option>'}).join("");
-  if(keep)$("staff").value=keep;
+  var ks=cfg.staff.filter(function(x){return x.name===keep})[0],ko=ks?orgOf(ks):"",so=ls("fl_org");
+  if(ko)setOrg(ko);else if(so==="RP"||so==="IRCC")setOrg(so);
+  renderStaff(keep);
+}
+function renderStaff(keep){
+  var o=curOrg(),list=cfg.staff.filter(function(s){var g=orgOf(s);return !g||g===o});
+  $("staff").innerHTML='<option value="">ជ្រើសរើសឈ្មោះ</option>'+list.map(function(s){return '<option>'+esc(s.name)+'</option>'}).join("");
+  $("staff").value=(keep&&list.some(function(x){return x.name===keep}))?keep:"";
   onStaff(true);
 }
 function onStaff(initial){
@@ -203,6 +234,7 @@ function loadMine(){
 
 $("apiSave").onclick=function(){var v=$("apiIn").value.trim();if(!/^https:\/\/script\.google\.com\/.+\/exec/.test(v)){say("URL មិនត្រឹមត្រូវ។ ត្រូវបញ្ចប់ដោយ /exec","err");return}ls("fl_api",v);$("setup").hidden=true;say("");loadConfig()};
 $("staff").onchange=function(){onStaff(false)};
+document.querySelectorAll("input[name=org]").forEach(function(x){x.onchange=function(){ls("fl_org",curOrg());ls("fl_staff","");if(cfg)renderStaff(null)}});
 document.querySelectorAll('input[name=proj]').forEach(function(x){x.onchange=function(){ls("fl_proj","1");fillCats()}});
 $("cat").onchange=fillActs;
 
@@ -212,9 +244,17 @@ function validate(p){
   if(p.total!==""&&p.women!==""&&Number(p.women)>Number(p.total))return "ចំនួនស្ត្រីមិនអាចច្រើនជាងចំនួនសរុបបានទេ។";
   return "";
 }
+// The sheet already has a Notes column, so the problem / solution are also written into it (labelled) until separate columns exist.
+function notesWith(p){
+  var a=[];
+  if(p.notes)a.push(p.notes);
+  if(p.problem)a.push("⚠️ បញ្ហា៖ "+p.problem);
+  if(p.solution)a.push("✅ ដំណោះស្រាយ៖ "+p.solution);
+  return a.join("\n");
+}
 function send(p,draftId,btns){
   var s=cfg&&cfg.staff.filter(function(x){return x.name===p.staff})[0];p.section=s?s.section:"";
-  var body=JSON.stringify({staff:p.staff,date:p.date,project:p.project,category:p.category,activity:p.activity,location:p.location,irpg:(p.irpg&&p.irpg!==OTHER?p.irpg:irpgOfVillage(p.location)),total:p.total,women:p.women,notes:p.notes,section:p.section});
+  var body=JSON.stringify({staff:p.staff,date:p.date,project:p.project,category:p.category,activity:p.activity,location:p.location,irpg:(p.irpg&&p.irpg!==OTHER?p.irpg:irpgOfVillage(p.location)),total:p.total,women:p.women,notes:notesWith(p),problem:p.problem||"",solution:p.solution||"",org:p.org||"",section:p.section});
   btns.forEach(function(b){b.disabled=true});say("កំពុងបញ្ជូន...");
   fetch(api(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body})
     .then(function(r){return r.json()}).then(function(d){
@@ -280,7 +320,8 @@ function putDrafts(a){ls("fl_drafts",JSON.stringify(a))}
 function formData(){
   var c=(cfg&&cfg.activities[proj()]||[])[$("cat").value];
   return {staff:$("staff").value,date:$("date").value,project:proj(),category:c?c.category:"",activity:$("act").value,
-    location:getLoc(),irpg:$("irpg").value,total:$("tot").value,women:$("wom").value,notes:$("note").value.trim()};
+    location:getLoc(),irpg:$("irpg").value,total:$("tot").value,women:$("wom").value,notes:$("note").value.trim(),
+    problem:$("prob").value.trim(),solution:$("sol").value.trim(),org:curOrg()};
 }
 function showEdit(){
   var b=$("editBar");
@@ -289,7 +330,7 @@ function showEdit(){
     $("saveDraft").textContent="Save ការកែប្រែ"}
   else{b.hidden=true;b.innerHTML="";$("saveDraft").textContent="Save ទុកសិន"}
 }
-function clearForm(){["loc","tot","wom","note"].forEach(function(i){$(i).value=""});$("irpg").value="";fillVil();$("act").value="";$("date").value=today()}
+function clearForm(){["loc","tot","wom","note","prob","sol"].forEach(function(i){$(i).value=""});$("irpg").value="";fillVil();$("act").value="";$("date").value=today()}
 function renderDrafts(){
   var a=getDrafts(),w=$("draftWrap");
   w.hidden=!a.length;
@@ -309,6 +350,8 @@ function delDraft(id,quiet){
 }
 function loadDraft(id){
   var d=getDrafts().filter(function(x){return x.id===id})[0];if(!d||!cfg)return;
+  var s0=cfg.staff.filter(function(x){return x.name===d.staff})[0];
+  if(s0&&orgOf(s0)&&orgOf(s0)!==curOrg()){setOrg(orgOf(s0));renderStaff(d.staff)}
   $("staff").value=d.staff;ls("fl_staff",d.staff);
   var s=cfg.staff.filter(function(x){return x.name===d.staff})[0];
   $("secInfo").textContent=s&&s.section?"ផ្នែក៖ "+s.section:"";
@@ -320,7 +363,7 @@ function loadDraft(id){
   $("cat").value=ci>-1?String(ci):"";fillActs();
   $("act").value=d.activity||"";
   $("date").value=d.date||today();setLoc(d.irpg,d.location||"");
-  $("tot").value=d.total||"";$("wom").value=d.women||"";$("note").value=d.notes||"";
+  $("tot").value=d.total||"";$("wom").value=d.women||"";$("note").value=d.notes||"";$("prob").value=d.problem||"";$("sol").value=d.solution||"";
   editId=id;showEdit();loadMine();
   say("បានបើកសេចក្ដីព្រាង។ កែរួចអាច Save ឬ Submit បាន។","ok");
   window.scrollTo({top:0,behavior:"smooth"});
@@ -436,6 +479,9 @@ $("sc").onchange=function(){if(sumData){fillSumActs();renderSum()}};
 $("sa").onchange=function(){if(sumData)renderSum()};
 $("si").onchange=function(){if(sumData)renderSum()};
 
+function themeIcon(){var d=document.documentElement.dataset.theme==="dark";$("theme").textContent=d?"☀️":"🌙";$("theme").title=d?"Light mode":"Dark mode"}
+$("theme").onclick=function(){var t=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=t;ls("fl_theme",t);themeIcon()};
+themeIcon();
 $("date").value=today();
 fillIrpg();
 loadConfig();
