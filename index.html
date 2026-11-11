@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 :root{--bar:#ffffff;--ink:#16221a;--muted:#6a776e;--line:#d9e0d6;--ics:#256b30;--fld:#2f6f6a;--icsbg:#e4f1e5;--fldbg:#dcefed}
-@media (prefers-color-scheme:dark){:root{--bar:#151c17;--ink:#eaf1ec;--muted:#93a198;--line:#2b372f;--ics:#6fcf7e;--fld:#6cc2ba;--icsbg:#1c3322;--fldbg:#1a3532}}
+:root[data-theme="dark"]{--bar:#151c17;--ink:#eaf1ec;--muted:#93a198;--line:#2b372f;--ics:#6fcf7e;--fld:#6cc2ba;--icsbg:#1c3322;--fldbg:#1a3532}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bar);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Khmer",sans-serif;-webkit-tap-highlight-color:transparent}
 body{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top,0px)}
@@ -47,8 +47,21 @@ nav button:focus-visible{outline:3px solid var(--c);outline-offset:-3px}
   var KEY = 'hub_last';
   function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function put(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  var current = 'ics';
+  // The menu bar follows the light / dark choice made inside the app that is open.
+  function themeOf(app) {
+    try {
+      var a = JSON.parse(localStorage.getItem('ics_theme') || 'null'), f = localStorage.getItem('fl_theme');
+      var t = app === 'ics' ? a : (f === 'dark' || f === 'light' ? f : a);
+      if (t === 'dark' || t === 'light') return t;
+    } catch (e) {}
+    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function applyTheme() { document.documentElement.dataset.theme = themeOf(current); }
+  window.addEventListener('storage', applyTheme);
   function show(app) {
     if (!SRC[app]) app = 'ics';
+    current = app; applyTheme();
     Object.keys(SRC).forEach(function (k) {
       var fr = document.getElementById('fr-' + k), on = k === app;
       if (on && !fr.getAttribute('src')) fr.setAttribute('src', SRC[k]);     // load an app the first time it is opened
