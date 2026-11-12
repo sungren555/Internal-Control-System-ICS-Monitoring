@@ -117,7 +117,9 @@ tr.dtl>td{padding:2px 8px 10px;background:var(--bg)}
     </div>
   </div>
   <label>ប្រភេទ (Category)<select id="cat" required></select></label>
+  <input id="catNew" type="text" placeholder="វាយឈ្មោះ Category ថ្មី" aria-label="Category ថ្មី" hidden>
   <label>សកម្មភាព<select id="act" required></select></label>
+  <input id="actNew" type="text" placeholder="វាយឈ្មោះសកម្មភាពថ្មី" aria-label="សកម្មភាពថ្មី" hidden>
   <label>កាលបរិច្ឆេទ<input type="date" id="date" required></label>
   <div class="row">
     <label>IRPG<select id="irpg"></select></label>
@@ -125,12 +127,12 @@ tr.dtl>td{padding:2px 8px 10px;background:var(--bg)}
   </div>
   <input id="loc" placeholder="បញ្ចូលឈ្មោះទីតាំង (ភូមិ / ឃុំ / ស្រុក)" hidden>
   <div class="row">
-    <label>អ្នកចូលរួមសរុប (នាក់)<input type="number" id="tot" min="0" inputmode="numeric" placeholder="មិនបង្ខំ"></label>
-    <label>ក្នុងនោះស្ត្រី (នាក់)<input type="number" id="wom" min="0" inputmode="numeric" placeholder="មិនបង្ខំ"></label>
+    <label>អ្នកចូលរួមសរុប (នាក់)<input type="number" id="tot" min="0" inputmode="numeric"></label>
+    <label>ក្នុងនោះស្ត្រី (នាក់)<input type="number" id="wom" min="0" inputmode="numeric"></label>
   </div>
   <label>កំណត់ត្រា / លទ្ធផល<textarea id="note" rows="3"></textarea></label>
-  <label>⚠️ បញ្ហាដែលជួបប្រទះ<textarea id="prob" rows="3" placeholder="មិនបង្ខំ"></textarea></label>
-  <label>✅ ដំណោះស្រាយ / ជំហានបន្ទាប់<textarea id="sol" rows="3" placeholder="មិនបង្ខំ"></textarea></label>
+  <label>⚠️ បញ្ហាដែលជួបប្រទះ<textarea id="prob" rows="3"></textarea></label>
+  <label>✅ ដំណោះស្រាយ / ជំហានបន្ទាប់<textarea id="sol" rows="3"></textarea></label>
   <div class="msg" id="msg" role="status"></div>
   <div class="editing" id="editBar" hidden></div>
   <div class="btns">
@@ -233,12 +235,19 @@ function onStaff(initial){
 }
 function fillCats(){
   var cats=(cfg.activities[proj()]||[]);
-  $("cat").innerHTML='<option value="">ជ្រើសរើស Category</option>'+cats.map(function(c,i){return '<option value="'+i+'">'+esc(c.category)+'</option>'}).join("");
+  $("cat").innerHTML='<option value="">ជ្រើសរើស Category</option>'+cats.map(function(c,i){return '<option value="'+i+'">'+esc(c.category)+'</option>'}).join("")+'<option value="__new">➕ បញ្ចូល Category ថ្មី…</option>';
   fillActs();
 }
 function fillActs(){
   var c=(cfg.activities[proj()]||[])[$("cat").value];
-  $("act").innerHTML='<option value="">ជ្រើសរើសសកម្មភាព</option>'+(c?c.items.map(function(a){return '<option>'+esc(a)+'</option>'}).join(""):"");
+  $("act").innerHTML='<option value="">ជ្រើសរើសសកម្មភាព</option>'+(c?c.items.map(function(a){return '<option>'+esc(a)+'</option>'}).join(""):"")+'<option value="__new">➕ បញ្ចូលសកម្មភាពថ្មី…</option>';
+  syncNew();
+}
+// A new Category has no activities yet, so its activity is always typed in too.
+function syncNew(){
+  if($("cat").value==="__new")$("act").value="__new";
+  $("catNew").hidden=$("cat").value!=="__new";
+  $("actNew").hidden=$("act").value!=="__new";
 }
 function loadMine(){
   var n=$("staff").value;
@@ -255,11 +264,11 @@ $("apiSave").onclick=function(){var v=$("apiIn").value.trim();if(!/^https:\/\/sc
 $("staff").onchange=function(){onStaff(false)};
 document.querySelectorAll("input[name=org]").forEach(function(x){x.onchange=function(){ls("fl_org",curOrg());ls("fl_staff","");setRepOrg(curOrg());if(cfg)renderStaff(null)}});
 document.querySelectorAll('input[name=proj]').forEach(function(x){x.onchange=function(){ls("fl_proj","1");fillCats()}});
-$("cat").onchange=fillActs;
+$("cat").onchange=function(){fillActs();if(!$("catNew").hidden)$("catNew").focus()};
+$("act").onchange=function(){syncNew();if(!$("actNew").hidden)$("actNew").focus()};
 
 function validate(p){
-  var c=(cfg&&cfg.activities[p.project]||[]).filter(function(x){return x.category===p.category})[0];
-  if(!p.staff||!p.date||!c||!p.activity||!p.location)return "សូមបំពេញ ឈ្មោះ Category សកម្មភាព កាលបរិច្ឆេទ និងទីតាំង។";
+  if(!p.staff||!p.date||!p.category||!p.activity||!p.location)return "សូមបំពេញ ឈ្មោះ Category សកម្មភាព កាលបរិច្ឆេទ និងទីតាំង។";
   if(p.total!==""&&p.women!==""&&Number(p.women)>Number(p.total))return "ចំនួនស្ត្រីមិនអាចច្រើនជាងចំនួនសរុបបានទេ។";
   return "";
 }
@@ -337,8 +346,10 @@ var editId=null;
 function getDrafts(){try{return JSON.parse(ls("fl_drafts")||"[]")}catch(e){return[]}}
 function putDrafts(a){ls("fl_drafts",JSON.stringify(a))}
 function formData(){
-  var c=(cfg&&cfg.activities[proj()]||[])[$("cat").value];
-  return {staff:$("staff").value,date:$("date").value,project:proj(),category:c?c.category:"",activity:$("act").value,
+  var cv=$("cat").value,c=(cfg&&cfg.activities[proj()]||[])[cv];
+  var category=cv==="__new"?$("catNew").value.trim():(c?c.category:"");
+  var activity=$("act").value==="__new"?$("actNew").value.trim():$("act").value;
+  return {staff:$("staff").value,date:$("date").value,project:proj(),category:category,activity:activity,
     location:getLoc(),irpg:$("irpg").value,total:$("tot").value,women:$("wom").value,notes:$("note").value.trim(),
     problem:$("prob").value.trim(),solution:$("sol").value.trim(),org:curOrg()};
 }
@@ -349,7 +360,7 @@ function showEdit(){
     $("saveDraft").textContent="Save ការកែប្រែ"}
   else{b.hidden=true;b.innerHTML="";$("saveDraft").textContent="Save ទុកសិន"}
 }
-function clearForm(){["loc","tot","wom","note","prob","sol"].forEach(function(i){$(i).value=""});$("irpg").value="";fillVil();$("act").value="";$("date").value=today()}
+function clearForm(){["loc","tot","wom","note","prob","sol"].forEach(function(i){$(i).value=""});$("irpg").value="";fillVil();$("actNew").value="";$("act").value=$("cat").value==="__new"?"__new":"";syncNew();$("date").value=today()}
 function renderDrafts(){
   var a=getDrafts(),w=$("draftWrap");
   w.hidden=!a.length;
@@ -379,8 +390,10 @@ function loadDraft(id){
   fillCats();
   var cats=cfg.activities[d.project]||[],ci=-1;
   cats.forEach(function(c,i){if(c.category===d.category)ci=i});
-  $("cat").value=ci>-1?String(ci):"";fillActs();
-  $("act").value=d.activity||"";
+  var isNewCat=ci<0&&!!d.category;
+  $("cat").value=isNewCat?"__new":(ci>-1?String(ci):"");$("catNew").value=isNewCat?d.category:"";fillActs();
+  var known=ci>-1&&cats[ci].items.indexOf(d.activity)>-1,isNewAct=!!d.activity&&!known;
+  $("act").value=isNewAct?"__new":(d.activity||"");$("actNew").value=isNewAct?d.activity:"";syncNew();
   $("date").value=d.date||today();setLoc(d.irpg,d.location||"");
   $("tot").value=d.total||"";$("wom").value=d.women||"";$("note").value=d.notes||"";$("prob").value=d.problem||"";$("sol").value=d.solution||"";
   editId=id;showEdit();loadMine();
