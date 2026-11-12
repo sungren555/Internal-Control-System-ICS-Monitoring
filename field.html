@@ -55,6 +55,17 @@ td.num,th.num{text-align:right;white-space:nowrap}
 .grand div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .grand b{display:block;font-size:1.3rem;line-height:1.3}.grand span{color:var(--muted);font-size:.85rem}
 .btn2{font:inherit;font-weight:700;background:var(--surface);color:var(--ink);border:2px solid var(--btn);border-radius:10px;padding:10px 16px;cursor:pointer}
+.lnkbtn{display:block;text-align:center;text-decoration:none;font:inherit;font-weight:700;background:var(--surface);color:var(--ink);border:2px solid var(--btn);border-radius:10px;padding:10px 16px}
+tr.clk{cursor:pointer}
+tr.clk td:first-child:before{content:"▸ ";color:var(--muted)}
+tr.clk.open td:first-child:before{content:"▾ "}
+tr.clk:focus-visible{outline:2px solid var(--btn);outline-offset:-2px}
+tr.dtl>td{padding:2px 8px 10px;background:var(--bg)}
+.it{padding:8px 10px;margin:6px 0 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.it .h{display:flex;justify-content:space-between;gap:8px;font-size:.92rem}
+.it .s{white-space:pre-wrap;font-size:.9rem;margin-top:4px}
+.it .m{color:var(--muted);font-size:.82rem}
+.it a{font-size:.85rem;color:var(--ink)}
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .draft{background:var(--surface);border:1px dashed var(--rice);border-left:6px solid var(--rice);border-radius:10px;padding:8px 12px;margin-bottom:8px}
 .draft .top{display:flex;justify-content:space-between;gap:8px;font-weight:600}
@@ -138,6 +149,13 @@ td.num,th.num{text-align:right;white-space:nowrap}
 </div>
 
 <div id="viewSum" hidden>
+  <div style="margin-bottom:12px">
+    <div style="font-weight:600;font-size:.92rem;margin-bottom:4px">អង្គភាព</div>
+    <div class="seg">
+      <div><input type="radio" name="rorg" id="ro1" value="RP" checked><label for="ro1" class="r">RP</label></div>
+      <div><input type="radio" name="rorg" id="ro2" value="IRCC"><label for="ro2" class="c">IRCC</label></div>
+    </div>
+  </div>
   <div class="row" style="margin-bottom:12px">
     <label>ខែ<select id="sm"><option value="">ខែទាំងអស់</option></select></label>
     <label>ផ្នែក (Section)<select id="ss"><option value="">ទាំងអស់</option></select></label>
@@ -149,6 +167,7 @@ td.num,th.num{text-align:right;white-space:nowrap}
   <div class="row" style="margin-bottom:12px">
     <label>IRPG<select id="si"><option value="">ទាំងអស់</option></select></label>
   </div>
+  <a id="sumSheet" class="lnkbtn" href="#" target="_blank" rel="noopener" style="margin-bottom:12px">📄 បើក Google Sheet</a>
   <div id="sumOut"></div>
 </div>
 </main>
@@ -188,7 +207,7 @@ function orgOf(s){
   return r;
 }
 function curOrg(){return document.querySelector("input[name=org]:checked").value}
-function setOrg(o){var r=document.querySelector("input[name=org][value="+o+"]");if(r)r.checked=true}
+function setOrg(o){var r=document.querySelector("input[name=org][value="+o+"]");if(r)r.checked=true;if(typeof setRepOrg==="function")setRepOrg(o)}
 function fillStaff(){
   var keep=ls("fl_staff")||$("staff").value;
   var ks=cfg.staff.filter(function(x){return x.name===keep})[0],ko=ks?orgOf(ks):"",so=ls("fl_org");
@@ -234,7 +253,7 @@ function loadMine(){
 
 $("apiSave").onclick=function(){var v=$("apiIn").value.trim();if(!/^https:\/\/script\.google\.com\/.+\/exec/.test(v)){say("URL មិនត្រឹមត្រូវ។ ត្រូវបញ្ចប់ដោយ /exec","err");return}ls("fl_api",v);$("setup").hidden=true;say("");loadConfig()};
 $("staff").onchange=function(){onStaff(false)};
-document.querySelectorAll("input[name=org]").forEach(function(x){x.onchange=function(){ls("fl_org",curOrg());ls("fl_staff","");if(cfg)renderStaff(null)}});
+document.querySelectorAll("input[name=org]").forEach(function(x){x.onchange=function(){ls("fl_org",curOrg());ls("fl_staff","");setRepOrg(curOrg());if(cfg)renderStaff(null)}});
 document.querySelectorAll('input[name=proj]').forEach(function(x){x.onchange=function(){ls("fl_proj","1");fillCats()}});
 $("cat").onchange=fillActs;
 
@@ -383,7 +402,34 @@ $("saveDraft").onclick=function(){
   say("បាន Save ទុកសិនហើយ ✓ (នៅលើឧបករណ៍នេះ)។ អាចកែវិញពីបញ្ជីខាងក្រោម។","ok");
 };
 
-var sumData=null;
+var sumData=null,curRows=[];
+var DEFAULT_SHEET="https://docs.google.com/spreadsheets/d/1wmMW8aXqnP8UwGqnvdw-ZIuMCSQUtKxytOXS0ADQXks/edit";
+function vorg(){var r=document.querySelector("input[name=rorg]:checked");return r?r.value:"RP"}
+function isCE(sec){return /^\s*CE\b/i.test(String(sec||""))}
+// RP sees its own rows; IRCC sees its own rows and never the CE section. Rows whose staff has no org yet are shown to both.
+function viewRows(){var o=vorg();return sumData.rows.filter(function(r){return (!r.org||r.org===o)&&!(o==="IRCC"&&isCE(r.section))})}
+function sheetBase(){return String((sumData&&sumData.url)||DEFAULT_SHEET).split("#")[0]}
+function updSheetLink(){
+  var m=$("sm").value,gid=sumData&&sumData.gids?sumData.gids[m]:null;
+  $("sumSheet").href=sheetBase()+(m&&gid!=null?"#gid="+gid:"");
+  $("sumSheet").textContent="📄 បើក Google Sheet"+(m?" · "+m:"");
+}
+function fillSumTop(){
+  var rows=viewRows(),cur=$("ss").value,secs=[];
+  rows.forEach(function(r){if(r.section&&secs.indexOf(r.section)<0)secs.push(r.section)});
+  $("ss").innerHTML='<option value="">ទាំងអស់</option>'+secs.map(function(x){return '<option>'+esc(x)+'</option>'}).join("");
+  $("ss").value=secs.indexOf(cur)>-1?cur:"";
+  var ci=$("si").value,irs=[];
+  rows.forEach(function(r){if(r.irp&&irs.indexOf(r.irp)<0)irs.push(r.irp)});irs.sort();
+  $("si").innerHTML='<option value="">ទាំងអស់</option>'+irs.map(function(x){return '<option>'+esc(x)+'</option>'}).join("");
+  $("si").value=irs.indexOf(ci)>-1?ci:"";
+}
+function setRepOrg(o){
+  var r=document.querySelector("input[name=rorg][value="+o+"]");
+  if(!r)return;
+  r.checked=true;ls("fl_vorg",o);
+  if(sumData){fillSumTop();fillSumCats();renderSum()}
+}
 function showTab(t){
   $("viewLog").hidden=t!=="log";$("viewSum").hidden=t!=="sum";
   $("tLog").classList.toggle("on",t==="log");$("tSum").classList.toggle("on",t==="sum");
@@ -397,33 +443,27 @@ function loadSum(){
     sumData=d;
     d.rows.forEach(function(r){r.irp=normIrpg(r.irpg)||irpgOfVillage(r.village)});
     if($("sm").options.length<=1)$("sm").innerHTML='<option value="">ខែទាំងអស់</option>'+d.months.map(function(m){return '<option>'+esc(m)+'</option>'}).join("");
-    var cur=$("ss").value,secs=[];
-    d.rows.forEach(function(r){if(r.section&&secs.indexOf(r.section)<0)secs.push(r.section)});
-    $("ss").innerHTML='<option value="">ទាំងអស់</option>'+secs.map(function(x){return '<option>'+esc(x)+'</option>'}).join("");
-    $("ss").value=cur;
-    var ci=$("si").value,irs=[];
-    d.rows.forEach(function(r){if(r.irp&&irs.indexOf(r.irp)<0)irs.push(r.irp)});irs.sort();
-    $("si").innerHTML='<option value="">ទាំងអស់</option>'+irs.map(function(x){return '<option>'+esc(x)+'</option>'}).join("");
-    $("si").value=ci;
+    fillSumTop();updSheetLink();
     fillSumCats();renderSum();
   }).catch(function(e){$("sumOut").innerHTML='<div class="empty">មិនអាចទាញរបាយការណ៍បានទេ៖ '+esc(e.message)+'</div>'});
 }
 function fillSumCats(){
   var sec=$("ss").value,cur=$("sc").value,cats=[];
-  sumData.rows.forEach(function(r){if((!sec||r.section===sec)&&r.category&&cats.indexOf(r.category)<0)cats.push(r.category)});
+  viewRows().forEach(function(r){if((!sec||r.section===sec)&&r.category&&cats.indexOf(r.category)<0)cats.push(r.category)});
   $("sc").innerHTML='<option value="">ទាំងអស់</option>'+cats.map(function(x){return '<option>'+esc(x)+'</option>'}).join("");
   if(cats.indexOf(cur)>-1)$("sc").value=cur;
   fillSumActs();
 }
 function fillSumActs(){
   var sec=$("ss").value,cat=$("sc").value,cur=$("sa").value,acts=[];
-  sumData.rows.forEach(function(r){if((!sec||r.section===sec)&&(!cat||r.category===cat)&&r.activity&&acts.indexOf(r.activity)<0)acts.push(r.activity)});
+  viewRows().forEach(function(r){if((!sec||r.section===sec)&&(!cat||r.category===cat)&&r.activity&&acts.indexOf(r.activity)<0)acts.push(r.activity)});
   $("sa").innerHTML='<option value="">ទាំងអស់</option>'+acts.map(function(x){return '<option>'+esc(x)+'</option>'}).join("");
   if(acts.indexOf(cur)>-1)$("sa").value=cur;
 }
 function renderSum(){
   var sec=$("ss").value,cat=$("sc").value,act=$("sa").value,irp=$("si").value,NOV="(មិនមានភូមិ)";
-  var rows=sumData.rows.filter(function(r){return (!sec||r.section===sec)&&(!cat||r.category===cat)&&(!act||r.activity===act)&&(!irp||r.irp===irp)});
+  var rows=viewRows().filter(function(r){return (!sec||r.section===sec)&&(!cat||r.category===cat)&&(!act||r.activity===act)&&(!irp||r.irp===irp)});
+  curRows=rows;
   if(!rows.length){$("sumOut").innerHTML='<div class="empty">មិនទាន់មានទិន្នន័យសម្រាប់ជម្រើសនេះទេ។</div>';return}
   var tree={},T=0,W=0,N=0,allV={};
   rows.forEach(function(r){
@@ -432,7 +472,7 @@ function renderSum(){
     var c=s.c[cn]=s.c[cn]||{t:0,w:0,a:{}};
     var a=c.a[r.activity]=c.a[r.activity]||{t:0,w:0,n:0,v:{}};
     var vn=String(r.village||"").trim(),vk=vn.toLowerCase()||NOV;
-    var v=a.v[vk]=a.v[vk]||{name:vn||NOV,n:0,t:0,w:0};
+    var v=a.v[vk]=a.v[vk]||{name:vn||NOV,key:vk,n:0,t:0,w:0};
     v.n+=r.count;v.t+=r.total;v.w+=r.women;
     a.n+=r.count;a.t+=r.total;a.w+=r.women;
     c.t+=r.total;c.w+=r.women;s.t+=r.total;s.w+=r.women;
@@ -450,7 +490,7 @@ function renderSum(){
     var ml=$("sm").value||"ខែទាំងអស់";
     h+='<div class="bd"><h3>'+esc(ml)+(irp?' · '+esc(irp):'')+(cat?' · '+esc(cat):'')+(act?' · '+esc(act):'')+'</h3><div class="tw"><table><tr><th>សកម្មភាព</th><th class="num">ភូមិ</th><th class="num">ចំនួនដង</th><th class="num">អ្នកចូលរួម</th><th class="num">ស្ត្រី</th></tr>';
     Object.keys(by).sort().forEach(function(k){var b=by[k];
-      h+='<tr><td>'+esc(k)+'</td><td class="num">'+Object.keys(b.v).length+'</td><td class="num">'+b.n+'</td><td class="num">'+b.t+'</td><td class="num">'+b.w+'</td></tr>'});
+      h+='<tr class="clk" tabindex="0" data-a="'+esc(k)+'"><td>'+esc(k)+'</td><td class="num">'+Object.keys(b.v).length+'</td><td class="num">'+b.n+'</td><td class="num">'+b.t+'</td><td class="num">'+b.w+'</td></tr>'});
     h+='</table></div></div>';
   }
   Object.keys(tree).forEach(function(sn){
@@ -462,7 +502,7 @@ function renderSum(){
       Object.keys(c.a).forEach(function(an){
         var a=c.a[an],vs=Object.keys(a.v).map(function(k){return a.v[k]}).sort(function(x,y){return y.t-x.t});
         h+='<details open><summary><span>'+esc(an)+'</span><span class="n">ភូមិ '+vc(a)+' · សរុប '+a.t+' · ស្ត្រី '+a.w+'</span></summary><div class="tw"><table><tr><th>ភូមិ</th><th class="num">ចំនួនដង</th><th class="num">សរុប</th><th class="num">ស្ត្រី</th></tr>';
-        vs.forEach(function(v){h+='<tr><td>'+esc(v.name)+'</td><td class="num">'+v.n+'</td><td class="num">'+v.t+'</td><td class="num">'+v.w+'</td></tr>'});
+        vs.forEach(function(v){h+='<tr class="clk" tabindex="0" data-s="'+esc(sn)+'" data-c="'+esc(cn)+'" data-a="'+esc(an)+'" data-v="'+esc(v.key)+'"><td>'+esc(v.name)+'</td><td class="num">'+v.n+'</td><td class="num">'+v.t+'</td><td class="num">'+v.w+'</td></tr>'});
         h+='</table></div></details>';
       });
       h+='</details>';
@@ -471,9 +511,47 @@ function renderSum(){
   });
   $("sumOut").innerHTML=h;
 }
+/* ===== ចុចជួរណាមួយ → មើលកំណត់ហេតុលម្អិត ===== */
+function detailItems(ds){
+  var NOV="(មិនមានភូមិ)",found=false,out=[];
+  curRows.forEach(function(r){
+    if(ds.s!==undefined&&(r.section||"(គ្មាន Section)")!==ds.s)return;
+    if(ds.c!==undefined&&(r.category||"(គ្មាន Category)")!==ds.c)return;
+    if(r.activity!==ds.a)return;
+    if(ds.v!==undefined&&(String(r.village||"").trim().toLowerCase()||NOV)!==ds.v)return;
+    if(!r.items)return;
+    found=true;
+    r.items.forEach(function(i){out.push({d:i.d,s:i.s,t:i.t,w:i.w,n:i.n,g:i.g,r:i.r,vn:String(r.village||"").trim()})});
+  });
+  if(!found)return null;
+  out.sort(function(a,b){return String(b.d).localeCompare(String(a.d))});
+  return out;
+}
+function detailHtml(items,showVil){
+  if(items===null)return '<div class="empty">ត្រូវអាប់ដេត Apps Script (Summary) ដើម្បីមើលព័ត៌មានលម្អិត។</div>';
+  if(!items.length)return '<div class="empty">គ្មានកំណត់ហេតុ។</div>';
+  var base=sheetBase();
+  return items.map(function(i){
+    var link=i.g!=null&&i.r?base+"#gid="+i.g+"&range=A"+i.r:"";
+    return '<div class="it"><div class="h"><span><b>'+esc(i.d||"-")+'</b> · '+esc(i.s||"-")+'</span><span>'+i.t+' នាក់ · ស្ត្រី '+i.w+'</span></div>'+
+      (showVil&&i.vn?'<div class="m">ភូមិ '+esc(i.vn)+'</div>':'')+
+      (i.n?'<div class="s">'+esc(i.n)+'</div>':'')+
+      (link?'<a href="'+esc(link)+'" target="_blank" rel="noopener">📄 បើកជួរនេះក្នុង Sheet</a>':'')+'</div>';
+  }).join("");
+}
+function toggleDetail(tr){
+  var nx=tr.nextElementSibling;
+  if(nx&&nx.classList.contains("dtl")){nx.parentNode.removeChild(nx);tr.classList.remove("open");return}
+  var d=document.createElement("tr");d.className="dtl";
+  d.innerHTML='<td colspan="'+tr.children.length+'">'+detailHtml(detailItems(tr.dataset),tr.dataset.v===undefined)+'</td>';
+  tr.parentNode.insertBefore(d,tr.nextSibling);tr.classList.add("open");
+}
+$("sumOut").addEventListener("click",function(e){var tr=e.target.closest?e.target.closest("tr.clk"):null;if(tr&&!e.target.closest("a"))toggleDetail(tr)});
+$("sumOut").addEventListener("keydown",function(e){if(e.key!=="Enter")return;var tr=e.target.closest?e.target.closest("tr.clk"):null;if(tr){e.preventDefault();toggleDetail(tr)}});
+document.querySelectorAll("input[name=rorg]").forEach(function(x){x.onchange=function(){setRepOrg(vorg())}});
 $("tLog").onclick=function(){showTab("log")};
 $("tSum").onclick=function(){showTab("sum")};
-$("sm").onchange=loadSum;
+$("sm").onchange=function(){updSheetLink();loadSum()};
 $("ss").onchange=function(){if(sumData){fillSumCats();renderSum()}};
 $("sc").onchange=function(){if(sumData){fillSumActs();renderSum()}};
 $("sa").onchange=function(){if(sumData)renderSum()};
@@ -482,6 +560,8 @@ $("si").onchange=function(){if(sumData)renderSum()};
 function themeIcon(){var d=document.documentElement.dataset.theme==="dark";$("theme").textContent=d?"☀️":"🌙";$("theme").title=d?"Light mode":"Dark mode"}
 $("theme").onclick=function(){var t=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=t;ls("fl_theme",t);themeIcon()};
 themeIcon();
+(function(){var o=ls("fl_vorg")||ls("fl_org")||"RP";var r=document.querySelector("input[name=rorg][value="+o+"]");if(r)r.checked=true})();
+updSheetLink();
 $("date").value=today();
 fillIrpg();
 loadConfig();
