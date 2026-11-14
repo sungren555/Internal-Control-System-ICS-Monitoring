@@ -59,38 +59,66 @@ function sortFarmers(a, b) {
 }
 
 function buildIcsDoc(d, o) {
+  var st = o.stages || { i: true, ii: true, iii: true };
+  if (!st.i && !st.ii && !st.iii) st = { i: true, ii: true, iii: true };
+  var lists = o.lists || {};
   var C = icsCompute(d, o.irpg), T = C.total, blocks = [];
-  var head = ['Total', 'Yes', 'No', 'Resign', 'Not yet', 'ICS-II done', 'ICS-II left', 'ICS-III done', 'ICS-III left', 'Next year'];
-  function line(a) { return [fmt(a.t), fmt(a.y), fmt(a.n), fmt(a.rs), fmt(a.left), fmt(a.d2), fmt(a.left2), fmt(a.d3), fmt(a.left3), fmt(a.nx)]; }
-  var widths = [2.1, 0.8, 0.8, 0.8, 0.9, 1, 1, 1, 1, 0.9, 1];
-  var align = ['l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r'];
+  var stageTxt = (st.i && st.ii && st.iii) ? 'All stages' : [['ICS-I', st.i], ['ICS-II', st.ii], ['ICS-III', st.iii]].filter(function (x) { return x[1]; }).map(function (x) { return x[0]; }).join(' + ');
+
+  // table columns depend on the stages that were selected
+  var cols = [{ h: 'Total', f: function (a) { return a.t; } }];
+  if (st.i) cols.push({ h: 'I Yes', hl: 'ICS-I Yes', f: function (a) { return a.y; } }, { h: 'I No', hl: 'ICS-I No', f: function (a) { return a.n; } },
+    { h: 'I Resign', hl: 'ICS-I Resign', f: function (a) { return a.rs; } }, { h: 'I Pend.', hl: 'ICS-I Pending', f: function (a) { return a.left; } });
+  if (st.ii) cols.push({ h: 'II Done', hl: 'ICS-II Done', f: function (a) { return a.d2; } }, { h: 'II Yes', hl: 'ICS-II Yes', f: function (a) { return a.y2; } },
+    { h: 'II No', hl: 'ICS-II No', f: function (a) { return a.d2 - a.y2; } }, { h: 'II Left', hl: 'ICS-II Left', f: function (a) { return a.left2; } });
+  if (st.iii) cols.push({ h: 'III Done', hl: 'ICS-III Done', f: function (a) { return a.d3; } }, { h: 'III Yes', hl: 'ICS-III Yes (next year)', f: function (a) { return a.nx; } },
+    { h: 'III No', hl: 'ICS-III No', f: function (a) { return a.d3 - a.nx; } }, { h: 'III Left', hl: 'ICS-III Left', f: function (a) { return a.left3; } });
+  function line(a) { return cols.map(function (c) { return fmt(c.f(a)); }); }
+  function tableBlock(first, rows) {
+    var w = [first.length > 6 ? 2.6 : 2.0].concat(cols.map(function () { return 0.85; }));
+    return { t: 'table', head: [first].concat(cols.map(function (c) { return c.h; })), headLong: [first].concat(cols.map(function (c) { return c.hl || c.h; })),
+      rows: rows, widths: w, align: ['l'].concat(cols.map(function () { return 'r'; })), bold: [rows.length - 1] };
+  }
+  var legend = [];
+  if (st.i) legend.push('I = ICS-I (planting)'); if (st.ii) legend.push('II = ICS-II (threshing)'); if (st.iii) legend.push('III = ICS-III (post-harvest)');
+  var legendNote = { t: 'p', text: legend.join(' · ') + '.  Left = still to do among the farmers who are eligible for that stage.' };
 
   if (o.summary) {
     blocks.push({ t: 'h1', text: 'Summary' });
-    blocks.push({ t: 'kpi', items: [
-      { l: 'Total farmers', v: fmt(T.t) }, { l: 'ICS-I passed (Yes)', v: fmt(T.y) }, { l: 'No', v: fmt(T.n) },
-      { l: 'Resign', v: fmt(T.rs) }, { l: 'Not yet inspected', v: fmt(T.left) } ] });
-    blocks.push({ t: 'kpi', items: [
-      { l: 'ICS-II done / to do', v: fmt(T.d2) + ' / ' + fmt(T.y) }, { l: 'ICS-III done / to do', v: fmt(T.d3) + ' / ' + fmt(T.y2) },
-      { l: 'Continue next year (passed ICS-III)', v: fmt(T.nx) } ] });
-    blocks.push({ t: 'chart', kind: 'pie', title: 'ICS-I result · Compliance', labels: ['Yes', 'No', 'Resign', 'Not yet inspected'],
+    var kp = [];
+    if (st.i) kp.push([{ l: 'Total farmers', v: fmt(T.t) }, { l: 'ICS-I passed (Yes)', v: fmt(T.y) }, { l: 'ICS-I No', v: fmt(T.n) }, { l: 'ICS-I Resign', v: fmt(T.rs) }, { l: 'Not yet inspected', v: fmt(T.left) }]);
+    if (st.ii) kp.push([{ l: 'ICS-II required (passed ICS-I)', v: fmt(T.y) }, { l: 'ICS-II done', v: fmt(T.d2) }, { l: 'ICS-II passed (Yes)', v: fmt(T.y2) }, { l: 'ICS-II No', v: fmt(T.d2 - T.y2) }, { l: 'ICS-II left', v: fmt(T.left2) }]);
+    if (st.iii) kp.push([{ l: 'ICS-III required (passed ICS-II)', v: fmt(T.y2) }, { l: 'ICS-III done', v: fmt(T.d3) }, { l: 'Passed → next year (Yes)', v: fmt(T.nx) }, { l: 'ICS-III No', v: fmt(T.d3 - T.nx) }, { l: 'ICS-III left', v: fmt(T.left3) }]);
+    if (!st.i) kp[0].unshift({ l: 'Total farmers', v: fmt(T.t) });
+    kp.forEach(function (items) { blocks.push({ t: 'kpi', items: items }); });
+    if (st.i) blocks.push({ t: 'chart', kind: 'pie', title: 'ICS-I result · Compliance', labels: ['Yes', 'No', 'Resign', 'Not yet inspected'],
       series: [{ name: 'Farmers', values: [T.y, T.n, T.rs, T.left] }], colors: [COLORS.yes, COLORS.no, COLORS.resign, COLORS.left], side: true });
-    blocks.push({ t: 'chart', kind: 'hbar', stacked: true, title: 'Progress by stage (done / left)', labels: ['ICS-I', 'ICS-II', 'ICS-III'],
-      series: [{ name: 'Done', values: [T.y + T.n + T.rs, T.d2, T.d3] }, { name: 'Left', values: [T.left, T.left2, T.left3] }], colors: [COLORS.done, COLORS.left], side: true });
+    if (st.ii) blocks.push({ t: 'chart', kind: 'pie', title: 'ICS-II result (farmers who passed ICS-I)', labels: ['Yes', 'No', 'Left'],
+      series: [{ name: 'Farmers', values: [T.y2, T.d2 - T.y2, T.left2] }], colors: [COLORS.yes, COLORS.no, COLORS.left], side: true });
+    if (st.iii) blocks.push({ t: 'chart', kind: 'pie', title: 'ICS-III result (farmers who passed ICS-II)', labels: ['Yes (next year)', 'No', 'Left'],
+      series: [{ name: 'Farmers', values: [T.nx, T.d3 - T.nx, T.left3] }], colors: [COLORS.yes, COLORS.no, COLORS.left], side: true });
+    var sl = [], sd = [], sk = [];
+    if (st.i) { sl.push('ICS-I'); sd.push(T.y + T.n + T.rs); sk.push(T.left); }
+    if (st.ii) { sl.push('ICS-II'); sd.push(T.d2); sk.push(T.left2); }
+    if (st.iii) { sl.push('ICS-III'); sd.push(T.d3); sk.push(T.left3); }
+    blocks.push({ t: 'chart', kind: 'hbar', stacked: true, title: 'Progress by stage (done / left)', labels: sl,
+      series: [{ name: 'Done', values: sd }, { name: 'Left', values: sk }], colors: [COLORS.done, COLORS.left], side: true });
   }
   if (o.byIrpg) {
     var gi = groupRows(C.rows, function (r) { return r.f.irpg || '-'; });
     var rowsI = gi.map(function (g) { return [g.key].concat(line(C.agg(g.list))); });
     rowsI.push(['Total'].concat(line(T)));
     blocks.push({ t: 'h1', text: 'By IRPG', pb: true });
-    blocks.push({ t: 'table', head: ['IRPG'].concat(head), rows: rowsI, widths: widths, align: align, bold: [rowsI.length - 1] });
+    blocks.push(tableBlock('IRPG', rowsI));
+    blocks.push(legendNote);
   }
   if (o.byVillage) {
     var gv = groupRows(C.rows, function (r) { return (r.f.irpg || '-') + ' · ' + (r.f.village || '-'); });
     var rowsV = gv.map(function (g) { return [g.key].concat(line(C.agg(g.list))); });
     rowsV.push(['Total'].concat(line(T)));
     blocks.push({ t: 'h1', text: 'By village', pb: !o.byIrpg });
-    blocks.push({ t: 'table', head: ['IRPG · Village'].concat(head), rows: rowsV, widths: widths, align: align, bold: [rowsV.length - 1] });
+    blocks.push(tableBlock('IRPG · Village', rowsV));
+    blocks.push(legendNote);
   }
   function listBlock(title, list, note, withStatus) {
     if (!list.length) { blocks.push({ t: 'h1', text: title, pb: true, pptx: false }); blocks.push({ t: 'p', text: 'No data.', pptx: false }); return; }
@@ -107,15 +135,15 @@ function buildIcsDoc(d, o) {
     if (note) blocks.push({ t: 'p', text: note, pptx: false });
     blocks.push({ t: 'table', head: hd, rows: rows, widths: w, align: hd.map(function () { return 'l'; }), pptx: false });
   }
-  if (o.lists.no) listBlock('Farmers with No / Resign', C.rows.filter(function (r) { return r.c1 === 'no' || r.c1 === 'resign'; }), '', true);
-  if (o.lists.left1) listBlock('Farmers not yet inspected (ICS-I)', C.rows.filter(function (r) { return r.c1 === ''; }), '', false);
-  if (o.lists.left2) listBlock('Farmers without ICS-II (passed ICS-I)', C.rows.filter(function (r) { return r.c1 === 'yes' && !r.r2; }), '', false);
-  if (o.lists.left3) listBlock('Farmers without ICS-III (passed ICS-II)', C.rows.filter(function (r) { return r.yes2 && !r.r3; }), '', false);
+  if (st.i && lists.no) listBlock('Farmers with No / Resign', C.rows.filter(function (r) { return r.c1 === 'no' || r.c1 === 'resign'; }), '', true);
+  if (st.i && lists.left1) listBlock('Farmers not yet inspected (ICS-I)', C.rows.filter(function (r) { return r.c1 === ''; }), '', false);
+  if (st.ii && lists.left2) listBlock('Farmers without ICS-II (passed ICS-I)', C.rows.filter(function (r) { return r.c1 === 'yes' && !r.r2; }), '', false);
+  if (st.iii && lists.left3) listBlock('Farmers without ICS-III (passed ICS-II)', C.rows.filter(function (r) { return r.yes2 && !r.r3; }), '', false);
 
   return { kind: 'ics', color: COLORS.done, landscape: true,
-    title: 'ICS Monitoring Report ' + o.year, sub: o.irpg ? 'IRPG: ' + o.irpg : 'All IRPGs',
+    title: 'ICS Monitoring Report ' + o.year, sub: (o.irpg ? 'IRPG: ' + o.irpg : 'All IRPGs') + ' · ' + stageTxt,
     meta: ['Data last synced: ' + (d.time ? new Date(d.time).toLocaleString('en-GB') : '-'), 'Generated: ' + new Date().toLocaleString('en-GB')],
-    footer: 'ICS Monitoring ' + o.year, blocks: blocks };
+    footer: 'ICS Monitoring ' + o.year + ' · ' + stageTxt, blocks: blocks };
 }
 
 /* ======================== FIELD WORK ======================== */
@@ -290,7 +318,7 @@ function docToHtml(doc, opt) {
     else if (b.t === 'chart') { var cs = chartSvg(b, 720); h.push('<div class="chart"><div class="ct">' + esc(b.title || '') + '</div>' + cs.svg + '</div>'); }
     else if (b.t === 'table') {
       var tw = b.widths || b.head.map(function () { return 1; }), ts = tw.reduce(function (a, x) { return a + x; }, 0);
-      h.push('<table><thead><tr>' + b.head.map(function (x, i) { return '<th class="' + (b.align && b.align[i] === 'r' ? 'r' : '') + '" style="width:' + (tw[i] * 100 / ts).toFixed(1) + '%">' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      h.push('<table><thead><tr>' + (b.headLong || b.head).map(function (x, i) { return '<th class="' + (b.align && b.align[i] === 'r' ? 'r' : '') + '" style="width:' + (tw[i] * 100 / ts).toFixed(1) + '%">' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>' +
         b.rows.map(function (r, ri) { return '<tr' + ((b.bold || []).indexOf(ri) > -1 ? ' class="b"' : '') + '>' + r.map(function (x, i) { return '<td class="' + (b.align && b.align[i] === 'r' ? 'r' : '') + '">' + esc(x).replace(/\n/g, '<br>').replace(/^ +/, function (m) { return '&nbsp;'.repeat(m.length); }) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>');
     }
   });
@@ -367,7 +395,7 @@ async function docToDocx(doc, env) {
       }
     } else if (b.t === 'table') {
       var tw = widthsDxa(b.widths || b.head.map(function () { return 1; })), isB = b.bold || [];
-      var rowsX = [new D.TableRow({ tableHeader: true, cantSplit: true, children: b.head.map(function (h, i) { return cell(h, tw[i], { fill: CC, color: 'FFFFFF', bold: true, align: b.align && b.align[i], size: 18 }); }) })];
+      var rowsX = [new D.TableRow({ tableHeader: true, cantSplit: true, children: (b.headLong || b.head).map(function (h, i) { return cell(h, tw[i], { fill: CC, color: 'FFFFFF', bold: true, align: b.align && b.align[i], size: 18 }); }) })];
       b.rows.forEach(function (r, ri) {
         var fill = isB.indexOf(ri) > -1 ? 'E4F1E5' : (ri % 2 ? 'F7F9F5' : undefined);
         rowsX.push(new D.TableRow({ cantSplit: true, children: r.map(function (x, i) { return cell(x, tw[i], { fill: fill, bold: isB.indexOf(ri) > -1, align: b.align && b.align[i], size: 17 }); }) }));
