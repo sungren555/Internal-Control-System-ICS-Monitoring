@@ -9,24 +9,26 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
-:root{--bar:#ffffff;--ink:#16221a;--muted:#6a776e;--line:#d9e0d6;--ics:#256b30;--fld:#2f6f6a;--icsbg:#e4f1e5;--fldbg:#dcefed}
-:root[data-theme="dark"]{--bar:#151c17;--ink:#eaf1ec;--muted:#93a198;--line:#2b372f;--ics:#6fcf7e;--fld:#6cc2ba;--icsbg:#1c3322;--fldbg:#1a3532}
+:root{--bar:#ffffff;--ink:#16221a;--muted:#6a776e;--line:#d9e0d6;--ics:#256b30;--fld:#2f6f6a;--rep:#6b4fa0;--icsbg:#e4f1e5;--fldbg:#dcefed;--repbg:#ebe5f5}
+:root[data-theme="dark"]{--bar:#151c17;--ink:#eaf1ec;--muted:#93a198;--line:#2b372f;--ics:#6fcf7e;--fld:#6cc2ba;--rep:#b69cf0;--icsbg:#1c3322;--fldbg:#1a3532;--repbg:#2a2440}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bar);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Khmer",sans-serif;-webkit-tap-highlight-color:transparent}
 body{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top,0px)}
 .stage{flex:1;min-height:0;position:relative;background:var(--bar)}
 .stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none;background:var(--bar)}
 .stage iframe.on{display:block}
-nav{flex:none;display:grid;grid-template-columns:1fr 1fr;background:var(--bar);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav{flex:none;display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bar);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav button{font:inherit;border:0;background:none;color:var(--muted);padding:8px 6px 7px;display:grid;justify-items:center;gap:1px;cursor:pointer;border-top:3px solid transparent;min-height:58px}
 nav button .ic{font-size:21px;line-height:1.1}
-nav button b{font-size:14px;font-weight:700}
-nav button small{font-size:11.5px;opacity:.85}
+nav button b{font-size:13px;font-weight:700}
+nav button small{font-size:11px;opacity:.85}
 nav button.on{color:var(--c);border-top-color:var(--c)}
 nav button[data-app=ics]{--c:var(--ics)}
 nav button[data-app=fld]{--c:var(--fld)}
+nav button[data-app=rep]{--c:var(--rep)}
 nav button[data-app=ics].on{background:var(--icsbg)}
 nav button[data-app=fld].on{background:var(--fldbg)}
+nav button[data-app=rep].on{background:var(--repbg)}
 nav button:focus-visible{outline:3px solid var(--c);outline-offset:-3px}
 </style>
 </head>
@@ -34,16 +36,18 @@ nav button:focus-visible{outline:3px solid var(--c);outline-offset:-3px}
 <div class="stage">
   <iframe id="fr-ics" title="ICS Monitoring" allow="geolocation"></iframe>
   <iframe id="fr-fld" title="Field Work Minute" allow="geolocation"></iframe>
+  <iframe id="fr-rep" title="Reports" allow="geolocation"></iframe>
 </div>
 <nav aria-label="Menu">
   <button type="button" data-app="ics" aria-label="ICS Monitoring"><span class="ic">🌱</span><b>ICS Monitoring</b><small>ត្រួតពិនិត្យ ICS</small></button>
   <button type="button" data-app="fld" aria-label="Field Work Minute"><span class="ic">📝</span><b>Field Work Minute</b><small>កំណត់ហេតុចុះ Field</small></button>
+  <button type="button" data-app="rep" aria-label="Reports"><span class="ic">📊</span><b>Reports</b><small>របាយការណ៍លម្អិត</small></button>
 </nav>
 <script>
 (function () {
-  var SRC = { ics: 'ics.html', fld: 'field.html' };
-  var TITLE = { ics: 'ICS Monitoring', fld: 'Field Work Minute' };
-  var COLOR = { ics: '#256b30', fld: '#2f6f6a' };
+  var SRC = { ics: 'ics.html', fld: 'field.html', rep: 'report.html' };
+  var TITLE = { ics: 'ICS Monitoring', fld: 'Field Work Minute', rep: 'Reports' };
+  var COLOR = { ics: '#256b30', fld: '#2f6f6a', rep: '#6b4fa0' };
   var KEY = 'hub_last';
   function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function put(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
