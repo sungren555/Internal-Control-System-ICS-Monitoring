@@ -70,6 +70,12 @@ section[hidden]{display:none}
     </div>
     <div class="kpis" id="iKpi"></div>
     <div class="card">
+      <h2>វគ្គ · Stages <span class="info">(ជ្រើសតែវគ្គដែលត្រូវការ · pick only the stages you need)</span></h2>
+      <label class="chk"><input type="checkbox" id="sI" checked><span>ICS-I · Rice planting</span></label>
+      <label class="chk"><input type="checkbox" id="sII" checked><span>ICS-II · Threshing</span></label>
+      <label class="chk"><input type="checkbox" id="sIII" checked><span>ICS-III · Post-harvest</span></label>
+    </div>
+    <div class="card">
       <h2>ដាក់ចូលក្នុងរបាយការណ៍ · Include</h2>
       <label class="chk"><input type="checkbox" id="oSum" checked><span>Summary &amp; charts</span></label>
       <label class="chk"><input type="checkbox" id="oIrpg" checked><span>Table by IRPG</span></label>
@@ -173,13 +179,33 @@ function fillIcsFilters(){
   $("ii").innerHTML='<option value="">All IRPGs</option>'+list.map(function(x){return"<option>"+esc(x)+"</option>"}).join("");
   $("ii").value=list.indexOf(cur)>-1?cur:"";
 }
+function stages(){return{i:$("sI").checked,ii:$("sII").checked,iii:$("sIII").checked}}
+var STAGE_LISTS={oNo:"i",oL1:"i",oL2:"ii",oL3:"iii"};
+function syncStages(){
+  var st=stages();
+  Object.keys(STAGE_LISTS).forEach(function(id){
+    var on=st[STAGE_LISTS[id]],lab=$(id).closest("label");
+    $(id).disabled=!on;lab.classList.toggle("off",!on);
+  });
+}
+["sI","sII","sIII"].forEach(function(id){
+  $(id).onchange=function(){
+    var st=stages();
+    if(!st.i&&!st.ii&&!st.iii){this.checked=true;say("ត្រូវជ្រើសយ៉ាងហោចណាស់មួយវគ្គ · Select at least one stage","err");return}
+    say("");syncStages();renderIcs();
+  };
+});
 function renderIcs(){
   if(!icsData||!icsData.farmers.length){
     $("iKpi").innerHTML="";$("iInfo").textContent="មិនទាន់មានទិន្នន័យ — ចុច ↻ ដើម្បីទាញ។ · No data yet — tap Refresh.";return;
   }
   var C=RC.icsCompute(icsData,$("ii").value),T=C.total;
   $("iInfo").textContent="Farmers "+icsData.farmers.length+" · last synced "+(icsData.time?new Date(icsData.time).toLocaleString("en-GB"):"-");
-  var k=[["Total farmers",T.t],["ICS-I passed",T.y],["No",T.n],["Resign",T.rs],["Not yet inspected",T.left],["ICS-II done",T.d2],["ICS-III done",T.d3],["Next year",T.nx]];
+  var st=stages(),k=[];
+  if(st.i)k.push(["Total farmers",T.t],["ICS-I passed",T.y],["ICS-I No",T.n],["ICS-I Resign",T.rs],["Not yet inspected",T.left]);
+  else k.push(["Total farmers",T.t]);
+  if(st.ii)k.push(["ICS-II done",T.d2],["ICS-II passed",T.y2],["ICS-II left",T.left2]);
+  if(st.iii)k.push(["ICS-III done",T.d3],["Next year (III Yes)",T.nx],["ICS-III left",T.left3]);
   $("iKpi").innerHTML=k.map(function(x){return"<div><b>"+Number(x[1]).toLocaleString("en-US")+"</b><span>"+esc(x[0])+"</span></div>"}).join("");
 }
 function loadIcs(sync){
@@ -255,26 +281,37 @@ $("fSync").onclick=function(){loadFld($("fm").value)};
 /* ================= build + export ================= */
 function buildDoc(k){
   if(k==="ics"){
-    return RC.buildIcsDoc(icsData,{year:icsYear(),irpg:$("ii").value,summary:$("oSum").checked,byIrpg:$("oIrpg").checked,byVillage:$("oVil").checked,
+    return RC.buildIcsDoc(icsData,{year:icsYear(),irpg:$("ii").value,stages:stages(),summary:$("oSum").checked,byIrpg:$("oIrpg").checked,byVillage:$("oVil").checked,
       lists:{no:$("oNo").checked,left1:$("oL1").checked,left2:$("oL2").checked,left3:$("oL3").checked}});
   }
   return RC.buildFieldDoc(fldData,fldOpts());
 }
 function fileBase(k){
   var d=new Date().toISOString().slice(0,10);
-  if(k==="ics")return"ICS_Report_"+icsYear()+($("ii").value?"_"+$("ii").value:"")+"_"+d;
+  if(k==="ics"){
+    var st=stages(),tag=(st.i&&st.ii&&st.iii)?"":"_"+[["ICS-I",st.i],["ICS-II",st.ii],["ICS-III",st.iii]].filter(function(x){return x[1]}).map(function(x){return x[0]}).join("_");
+    return"ICS_Report_"+icsYear()+($("ii").value?"_"+$("ii").value:"")+tag+"_"+d;
+  }
   var o=fldOpts();return"FieldWork_Report_"+(o.month?o.month.replace(/\s+/g,"-"):"All")+(o.org!=="ALL"?"_"+o.org:"")+"_"+d;
 }
 var libP={};
-function loadLib(src,test){
+var LIBS={
+  docx:["lib/docx.iife.js","docx.iife.js","https://cdn.jsdelivr.net/npm/docx@9.8.1/dist/index.iife.js"],
+  pptx:["lib/pptxgen.bundle.js","pptxgen.bundle.js","https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"]
+};
+// Tries the "lib" folder first, then the same folder as this page, then a CDN (so it still works if the folder was not uploaded).
+function loadLib(name,test){
   if(test())return Promise.resolve();
-  if(libP[src])return libP[src];
-  libP[src]=new Promise(function(ok,bad){
-    var s=document.createElement("script");s.src=src;s.onload=ok;
-    s.onerror=function(){delete libP[src];bad(new Error("Cannot download "+src+" — check the Internet connection."))};
-    document.head.appendChild(s);
-  });
-  return libP[src];
+  if(libP[name])return libP[name];
+  var srcs=LIBS[name];
+  libP[name]=(function next(i){
+    if(i>=srcs.length)return Promise.reject(new Error('Cannot load the export library "'+name+'". Upload the folder "lib" (docx.iife.js, pptxgen.bundle.js) next to report.html, or check the Internet connection.'));
+    return new Promise(function(ok,bad){
+      var sc=document.createElement("script");sc.src=srcs[i];
+      sc.onload=function(){test()?ok():bad()};sc.onerror=bad;document.head.appendChild(sc);
+    }).catch(function(){return next(i+1)});
+  })(0).catch(function(e){delete libP[name];throw e});
+  return libP[name];
 }
 function svgToPng(svg,W,H){
   return new Promise(function(res){
@@ -330,9 +367,9 @@ function exportDoc(k,f){
   setBusy(true);say("កំពុងបង្កើតឯកសារ… · Generating…","busy");
   var p;
   if(f==="docx"){
-    p=loadLib("lib/docx.iife.js",function(){return!!window.docx}).then(function(){return RC.docToDocx(doc,{svgToPng:svgToPng})}).then(function(b){save(b,name+".docx")});
+    p=loadLib("docx",function(){return!!window.docx}).then(function(){return RC.docToDocx(doc,{svgToPng:svgToPng})}).then(function(b){save(b,name+".docx")});
   }else{
-    p=loadLib("lib/pptxgen.bundle.js",function(){return!!window.PptxGenJS}).then(function(){return RC.docToPptx(doc)}).then(cleanZip).then(function(b){save(b,name+".pptx")});
+    p=loadLib("pptx",function(){return!!window.PptxGenJS}).then(function(){return RC.docToPptx(doc)}).then(cleanZip).then(function(b){save(b,name+".pptx")});
   }
   p.then(function(){say("រួចរាល់ ✓ · "+name+"."+f,"ok")}).catch(function(e){say("Error: "+(e.message||e),"err")}).then(function(){setBusy(false)});
 }
@@ -340,6 +377,7 @@ document.querySelectorAll("[data-f]").forEach(function(b){b.onclick=function(){e
 ["oDet","oPro"].forEach(function(i){$(i).onchange=renderFld});
 
 /* ---------- start ---------- */
+syncStages();
 loadIcs(false);
 if(location.hash==="#fld")show("fld");
 if(window.__reportTest)window.__reportTest={exportDoc:exportDoc,buildDoc:buildDoc};
