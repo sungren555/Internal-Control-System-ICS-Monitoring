@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reports</title>
+<link rel="icon" href="icons/icon-192.png">
+<script>try{var t=localStorage.getItem("fl_theme");if(t!=="dark"&&t!=="light"){var i=JSON.parse(localStorage.getItem("ics_theme")||"null");t=(i==="dark"||i==="light")?i:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme="light"}</script>
+<style>
+:root{color-scheme:light;--bg:#f3f5ee;--surface:#fff;--ink:#16221a;--muted:#5b675f;--line:#d9e0d6;--ics:#256b30;--fld:#2f6f6a;--c:var(--ics);--soft:#e8f1e9}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#141a15;--surface:#1c241e;--ink:#eaf1ec;--muted:#93a198;--line:#2e3a31;--ics:#6fcf7e;--fld:#6cc2ba;--soft:#1f3023}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Khmer",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;-webkit-tap-highlight-color:transparent}
+main{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:1.25rem;margin:4px 0 12px}
+.ibtn{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;width:44px;height:44px;font-size:20px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tabs button{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 8px;cursor:pointer;min-height:48px}
+.tabs button.on{border-color:var(--c);background:var(--soft);color:var(--c)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:1rem;margin:0 0 8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+label{display:block;font-weight:600;font-size:.92rem;color:var(--muted)}
+select{width:100%;font:inherit;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 10px;margin-top:4px;min-height:46px}
+.info{color:var(--muted);font-size:.85rem;margin-top:8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:520px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpis div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.kpis b{display:block;font-size:1.35rem;color:var(--c)}
+.kpis span{font-size:.78rem;color:var(--muted)}
+.chk{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-weight:500;color:var(--ink);font-size:.95rem}
+.chk:last-child{border-bottom:0}
+.chk input{width:22px;height:22px;accent-color:var(--c);flex:none}
+.chk small{color:var(--muted);display:block;font-weight:400;font-size:.78rem}
+.chk.off{opacity:.45}
+.exp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:520px){.exp{grid-template-columns:1fr}}
+.btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:14px 10px;min-height:52px;cursor:pointer;color:#fff;background:var(--c)}
+.btn.w{background:#2b579a}.btn.p{background:#c0392b}.btn.x{background:#d35400}
+.btn:disabled{opacity:.5;cursor:default}
+.btn2{font:inherit;font-weight:600;border:2px solid var(--c);background:transparent;color:var(--c);border-radius:12px;padding:10px 14px;min-height:46px;cursor:pointer;margin-top:10px;width:100%}
+#msg{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:.9rem;display:none}
+#msg.ok{display:block;background:#e3f3e6;color:#1c5d2a}#msg.err{display:block;background:#fbe4e1;color:#9c2b1f}#msg.busy{display:block;background:var(--soft);color:var(--ink)}
+:root[data-theme="dark"] #msg.ok{background:#1c3524;color:#9fe0ae}:root[data-theme="dark"] #msg.err{background:#3b1f1b;color:#f5a99f}
+.note{color:var(--muted);font-size:.82rem;margin:8px 2px}
+section[hidden]{display:none}
+.pv{position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column}
+.pv[hidden]{display:none}
+.pv header{display:flex;gap:8px;align-items:center;padding:8px 10px;background:var(--c);color:#fff}
+.pv header b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv header button{border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:10px;min-width:44px;height:40px;font:inherit;font-weight:700;padding:0 12px;cursor:pointer}
+.pv iframe{flex:1;border:0;background:#fff}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><h1>📊 របាយការណ៍លម្អិត · Detail Reports</h1><button type="button" class="ibtn" id="theme" aria-label="Dark / Light mode"></button></div>
+  <div class="tabs"><button type="button" id="tI" class="on">🌱 ICS Monitoring</button><button type="button" id="tF">📝 Field Work Minute</button></div>
+
+  <section id="pI">
+    <div class="card">
+      <div class="row">
+        <label>ឆ្នាំ · Year<select id="iy"></select></label>
+        <label>IRPG<select id="ii"></select></label>
+      </div>
+      <div class="info" id="iInfo"></div>
+      <button type="button" class="btn2" id="iSync">↻ ទាញទិន្នន័យថ្មី · Refresh data</button>
+    </div>
+    <div class="kpis" id="iKpi"></div>
+    <div class="card">
+      <h2>ដាក់ចូលក្នុងរបាយការណ៍ · Include</h2>
+      <label class="chk"><input type="checkbox" id="oSum" checked><span>Summary &amp; charts</span></label>
+      <label class="chk"><input type="checkbox" id="oIrpg" checked><span>Table by IRPG</span></label>
+      <label class="chk"><input type="checkbox" id="oVil" checked><span>Table by village</span></label>
+      <label class="chk"><input type="checkbox" id="oNo" checked><span>List: farmers with No / Resign <small>Word &amp; PDF only</small></span></label>
+      <label class="chk"><input type="checkbox" id="oL1"><span>List: not yet inspected (ICS-I) <small>Word &amp; PDF only</small></span></label>
+      <label class="chk"><input type="checkbox" id="oL2"><span>List: pending ICS-II <small>Word &amp; PDF only · long if all IRPGs</small></span></label>
+      <label class="chk"><input type="checkbox" id="oL3"><span>List: pending ICS-III <small>Word &amp; PDF only</small></span></label>
+    </div>
+    <div class="exp">
+      <button type="button" class="btn w" data-k="ics" data-f="docx">📄 Word (.docx)</button>
+      <button type="button" class="btn p" data-k="ics" data-f="pdf">📕 PDF</button>
+      <button type="button" class="btn x" data-k="ics" data-f="pptx">📊 PowerPoint (.pptx)</button>
+    </div>
+    <button type="button" class="btn2" data-k="ics" data-f="preview">🔍 Preview</button>
+  </section>
+
+  <section id="pF" hidden>
+    <div class="card">
+      <div class="row">
+        <label>ខែ · Month<select id="fm"></select></label>
+        <label>អង្គភាព · Organisation<select id="fo"><option value="ALL">RP + IRCC (all)</option><option value="RP">RP</option><option value="IRCC">IRCC (CE excluded)</option></select></label>
+      </div>
+      <div class="info" id="fInfo"></div>
+      <button type="button" class="btn2" id="fSync">↻ ទាញទិន្នន័យថ្មី · Refresh data</button>
+    </div>
+    <div class="kpis" id="fKpi"></div>
+    <div class="card">
+      <h2>Section (ក្នុងរបាយការណ៍ ផ្នែកនីមួយៗបំបែកដោយឡែក)</h2>
+      <div id="fSecs"></div>
+    </div>
+    <div class="card">
+      <h2>ដាក់ចូលក្នុងរបាយការណ៍ · Include</h2>
+      <label class="chk" id="cDet"><input type="checkbox" id="oDet" checked><span>Detailed log (date, staff, village, note) <small>Word &amp; PDF only</small></span></label>
+      <label class="chk" id="cPro"><input type="checkbox" id="oPro" checked><span>Problems encountered &amp; solutions</span></label>
+      <div class="note" id="fWarn" hidden>⚠️ Details and problems need the updated Apps Script (Summary.gs). Until it is deployed only the totals can be exported.</div>
+    </div>
+    <div class="exp">
+      <button type="button" class="btn w" data-k="fld" data-f="docx">📄 Word (.docx)</button>
+      <button type="button" class="btn p" data-k="fld" data-f="pdf">📕 PDF</button>
+      <button type="button" class="btn x" data-k="fld" data-f="pptx">📊 PowerPoint (.pptx)</button>
+    </div>
+    <button type="button" class="btn2" data-k="fld" data-f="preview">🔍 Preview</button>
+  </section>
+
+  <div id="msg"></div>
+  <div class="note">របាយការណ៍ត្រូវបានបង្កើតជាភាសាអង់គ្លេស · Reports are generated in English. PDF: choose "Save as PDF" in the print window. Word / PowerPoint need Internet the first time (the export library is downloaded once).</div>
+</main>
+
+<div class="pv" id="pv" hidden>
+  <header><b id="pvT">Preview</b><button type="button" id="pvPrint">🖨 PDF</button><button type="button" id="pvX">✕</button></header>
+  <iframe id="pvF" title="Preview"></iframe>
+</div>
+
+<script src="report-core.js"></script>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function lsJson(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+var RC=window.ReportCore;
+var ICS_API="https://script.google.com/macros/s/AKfycbw00uMO30du1WjM4Zl0WZtrwN_lSsfZ1u4HLwJGPXOaLZP6erVHQz4lcsS6QMTRyoOu/exec";
+var FLD_API=ls("fl_api")||"https://script.google.com/macros/s/AKfycbxmceczGxDx8RLZsGSPOhwtfP3HnQtRNOynUcdRkq1qdvl2KgB6i0Ui3nIvZh-u5cyJ/exec";
+var YEARS=["2026","2027"];
+var mode="ics",icsData=null,fldData=null,busy=false;
+
+/* ---------- theme ---------- */
+function themeIcon(){var d=document.documentElement.dataset.theme==="dark";$("theme").textContent=d?"☀️":"🌙"}
+$("theme").onclick=function(){var t=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=t;ls("fl_theme",t);themeIcon()};
+themeIcon();
+
+/* ---------- messages ---------- */
+function say(t,k){var m=$("msg");m.className=t?k||"":"";m.textContent=t||""}
+function setBusy(b){busy=b;document.querySelectorAll(".exp .btn,.btn2").forEach(function(x){x.disabled=b})}
+
+/* ---------- tabs ---------- */
+function show(m){
+  mode=m;
+  $("pI").hidden=m!=="ics";$("pF").hidden=m!=="fld";
+  $("tI").classList.toggle("on",m==="ics");$("tF").classList.toggle("on",m==="fld");
+  document.documentElement.style.setProperty("--c",m==="ics"?"var(--ics)":"var(--fld)");
+  say("");
+  if(m==="fld"&&!fldData)loadFld(); 
+}
+$("tI").onclick=function(){show("ics")};
+$("tF").onclick=function(){show("fld")};
+
+/* ================= ICS ================= */
+function cacheIcs(y){
+  var d=lsJson("ics_data_"+y,null)||(y===YEARS[0]?lsJson("ics_data",null):null);
+  if(d){["farmers","inspectors","ics1","nc","ics2","ics3"].forEach(function(k){if(!d[k])d[k]=[]})}
+  return d;
+}
+function icsYear(){return $("iy").value}
+function fillIcsFilters(){
+  var cur=$("ii").value,seen={},list=[];
+  (icsData?icsData.farmers:[]).forEach(function(f){if(f.irpg&&!seen[f.irpg]){seen[f.irpg]=1;list.push(f.irpg)}});
+  list.sort();
+  $("ii").innerHTML='<option value="">All IRPGs</option>'+list.map(function(x){return"<option>"+esc(x)+"</option>"}).join("");
+  $("ii").value=list.indexOf(cur)>-1?cur:"";
+}
+function renderIcs(){
+  if(!icsData||!icsData.farmers.length){
+    $("iKpi").innerHTML="";$("iInfo").textContent="មិនទាន់មានទិន្នន័យ — ចុច ↻ ដើម្បីទាញ។ · No data yet — tap Refresh.";return;
+  }
+  var C=RC.icsCompute(icsData,$("ii").value),T=C.total;
+  $("iInfo").textContent="Farmers "+icsData.farmers.length+" · last synced "+(icsData.time?new Date(icsData.time).toLocaleString("en-GB"):"-");
+  var k=[["Total farmers",T.t],["ICS-I passed",T.y],["No",T.n],["Resign",T.rs],["Not yet inspected",T.left],["ICS-II done",T.d2],["ICS-III done",T.d3],["Next year",T.nx]];
+  $("iKpi").innerHTML=k.map(function(x){return"<div><b>"+Number(x[1]).toLocaleString("en-US")+"</b><span>"+esc(x[0])+"</span></div>"}).join("");
+}
+function loadIcs(sync){
+  var y=icsYear();
+  icsData=cacheIcs(y);fillIcsFilters();renderIcs();
+  if(sync||!icsData||!icsData.farmers.length)syncIcs(y,!sync);
+}
+function syncIcs(y,quiet){
+  if(!navigator.onLine){if(!quiet)say("គ្មានអ៊ីនធឺណិត · Offline","err");return Promise.resolve()}
+  if(!quiet)say("កំពុងទាញទិន្នន័យ… · Loading…","busy");
+  return fetch(ICS_API+"?action=sync&year="+y+"&t="+Date.now(),{redirect:"follow"}).then(function(r){return r.json()}).then(function(j){
+    if(!j.ok)throw new Error(j.error||"Server error");
+    var d={farmers:j.farmers||[],inspectors:j.inspectors||[],ics1:j.ics1||[],nc:j.nc||[],ics2:j.ics2||[],ics3:j.ics3||[],time:j.time};
+    ls("ics_data_"+y,JSON.stringify(d));
+    if(y===icsYear()){icsData=d;fillIcsFilters();renderIcs()}
+    say(quiet?"":"ទាញទិន្នន័យថ្មីរួចហើយ ✓ · Data refreshed","ok");
+  }).catch(function(e){say("ទាញទិន្នន័យមិនបាន · "+(e.message||e),"err")});
+}
+$("iy").innerHTML=YEARS.map(function(y){return"<option>"+y+"</option>"}).join("");
+$("iy").value=(function(){var y=lsJson("ics_year",YEARS[0]);return YEARS.indexOf(y)>-1?y:YEARS[0]})();
+$("iy").onchange=function(){loadIcs(false)};
+$("ii").onchange=renderIcs;
+$("iSync").onclick=function(){syncIcs(icsYear(),false)};
+
+/* ================= Field Work ================= */
+function loadFld(month){
+  var m=month===undefined?$("fm").value:month;
+  if(!navigator.onLine){say("គ្មានអ៊ីនធឺណិត · Offline","err");return}
+  say("កំពុងទាញទិន្នន័យ… · Loading…","busy");
+  fetch(FLD_API+"?action=summary&month="+encodeURIComponent(m)+"&t="+Date.now()).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok)throw new Error(d.error||"Server error");
+    fldData=d;fillFldMonths(m);fillFldSecs();renderFld();say("");
+  }).catch(function(e){say("ទាញទិន្នន័យមិនបាន · "+(e.message||e),"err")});
+}
+function fillFldMonths(sel){
+  var ms=(fldData&&fldData.months)||[];
+  $("fm").innerHTML='<option value="">All months</option>'+ms.map(function(x){return"<option>"+esc(x)+"</option>"}).join("");
+  $("fm").value=ms.indexOf(sel)>-1?sel:"";
+}
+function fldOrgRows(){return fldData?RC.fldFilter(fldData,{org:$("fo").value,sections:null}):[]}
+function fillFldSecs(){
+  var rows=fldOrgRows(),secs=[],prev={};
+  document.querySelectorAll("#fSecs input").forEach(function(i){prev[i.value]=i.checked});
+  rows.forEach(function(r){var s=r.section||"(No section)";if(secs.indexOf(s)<0)secs.push(s)});
+  $("fSecs").innerHTML=secs.map(function(s,i){
+    var on=prev[s]===undefined?true:prev[s];
+    return'<label class="chk"><input type="checkbox" value="'+esc(s)+'"'+(on?" checked":"")+'><span>'+esc(s)+"</span></label>";
+  }).join("")||'<div class="note">No sections.</div>';
+  document.querySelectorAll("#fSecs input").forEach(function(i){i.onchange=renderFld});
+  var items=rows.some(function(r){return r.items&&r.items.length});
+  $("fWarn").hidden=items||!rows.length;
+  ["cDet","cPro"].forEach(function(id){$(id).classList.toggle("off",!items);$(id).querySelector("input").disabled=!items});
+}
+function pickedSecs(){
+  var a=[];document.querySelectorAll("#fSecs input").forEach(function(i){if(i.checked)a.push(i.value)});
+  return a;
+}
+function fldOpts(){
+  var items=fldData&&fldData.rows.some(function(r){return r.items&&r.items.length});
+  return{org:$("fo").value,month:$("fm").value,sections:pickedSecs(),details:items&&$("oDet").checked,problems:items&&$("oPro").checked};
+}
+function renderFld(){
+  if(!fldData){return}
+  var o=fldOpts(),T=RC.fldTree(RC.fldFilter(fldData,{org:o.org,sections:o.sections})).all;
+  $("fInfo").textContent=(fldData.rows||[]).length+" activity rows · "+(o.month||"all months");
+  var k=[["Sessions",T.times],["Villages",Object.keys(T.vills).length],["Participants",T.t],["Women",T.w]];
+  $("fKpi").innerHTML=k.map(function(x){return"<div><b>"+Number(x[1]).toLocaleString("en-US")+"</b><span>"+esc(x[0])+"</span></div>"}).join("");
+}
+$("fm").onchange=function(){loadFld($("fm").value)};
+$("fo").onchange=function(){fillFldSecs();renderFld()};
+$("fSync").onclick=function(){loadFld($("fm").value)};
+
+/* ================= build + export ================= */
+function buildDoc(k){
+  if(k==="ics"){
+    return RC.buildIcsDoc(icsData,{year:icsYear(),irpg:$("ii").value,summary:$("oSum").checked,byIrpg:$("oIrpg").checked,byVillage:$("oVil").checked,
+      lists:{no:$("oNo").checked,left1:$("oL1").checked,left2:$("oL2").checked,left3:$("oL3").checked}});
+  }
+  return RC.buildFieldDoc(fldData,fldOpts());
+}
+function fileBase(k){
+  var d=new Date().toISOString().slice(0,10);
+  if(k==="ics")return"ICS_Report_"+icsYear()+($("ii").value?"_"+$("ii").value:"")+"_"+d;
+  var o=fldOpts();return"FieldWork_Report_"+(o.month?o.month.replace(/\s+/g,"-"):"All")+(o.org!=="ALL"?"_"+o.org:"")+"_"+d;
+}
+var libP={};
+function loadLib(src,test){
+  if(test())return Promise.resolve();
+  if(libP[src])return libP[src];
+  libP[src]=new Promise(function(ok,bad){
+    var s=document.createElement("script");s.src=src;s.onload=ok;
+    s.onerror=function(){delete libP[src];bad(new Error("Cannot download "+src+" — check the Internet connection."))};
+    document.head.appendChild(s);
+  });
+  return libP[src];
+}
+function svgToPng(svg,W,H){
+  return new Promise(function(res){
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var c=document.createElement("canvas");c.width=W*2;c.height=H*2;var x=c.getContext("2d");
+        x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+        c.toBlob(function(b){b?b.arrayBuffer().then(function(ab){res(new Uint8Array(ab))}):res(null)},"image/png");
+      }catch(e){res(null)}
+    };
+    img.onerror=function(){res(null)};
+    img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  });
+}
+function save(blob,name){
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},4000);
+}
+// PowerPoint's library writes folder entries into the zip; some cloud editors refuse such files, so rewrite the zip without them.
+function cleanZip(blob){
+  if(!window.JSZip)return Promise.resolve(blob);
+  return JSZip.loadAsync(blob).then(function(z){
+    var out=new JSZip(),names=Object.keys(z.files).filter(function(n){return!z.files[n].dir});
+    return Promise.all(names.map(function(n){return z.files[n].async("uint8array")})).then(function(arr){
+      names.forEach(function(n,i){out.file(n,arr[i],{createFolders:false})});
+      return out.generateAsync({type:"blob",compression:"DEFLATE",mimeType:blob.type||"application/vnd.openxmlformats-officedocument.presentationml.presentation"});
+    });
+  }).catch(function(){return blob});
+}
+function previewHtml(html,title){
+  $("pvT").textContent=title;$("pvF").srcdoc=html;$("pv").hidden=false;
+}
+$("pvX").onclick=function(){$("pv").hidden=true;$("pvF").srcdoc=""};
+$("pvPrint").onclick=function(){try{$("pvF").contentWindow.focus();$("pvF").contentWindow.print()}catch(e){say("Print is not available here","err")}};
+
+function exportDoc(k,f){
+  if(busy)return;
+  if(k==="ics"&&(!icsData||!icsData.farmers.length)){say("មិនទាន់មានទិន្នន័យ ICS · No ICS data yet","err");return}
+  if(k==="fld"&&!fldData){say("មិនទាន់មានទិន្នន័យ Field · No Field data yet","err");return}
+  var doc;
+  try{doc=buildDoc(k)}catch(e){say("Error: "+e.message,"err");return}
+  var name=fileBase(k);
+  if(f==="preview"){previewHtml(RC.docToHtml(doc),doc.title);return}
+  if(f==="pdf"){
+    var url=URL.createObjectURL(new Blob([RC.docToHtml(doc,{autoPrint:true})],{type:"text/html"}));
+    var w=window.open(url,"_blank");
+    if(!w){previewHtml(RC.docToHtml(doc),doc.title);say("Allow pop-ups, or press 🖨 PDF in the preview","busy")}
+    else say("In the print window choose “Save as PDF”.","ok");
+    setTimeout(function(){URL.revokeObjectURL(url)},120000);
+    return;
+  }
+  setBusy(true);say("កំពុងបង្កើតឯកសារ… · Generating…","busy");
+  var p;
+  if(f==="docx"){
+    p=loadLib("lib/docx.iife.js",function(){return!!window.docx}).then(function(){return RC.docToDocx(doc,{svgToPng:svgToPng})}).then(function(b){save(b,name+".docx")});
+  }else{
+    p=loadLib("lib/pptxgen.bundle.js",function(){return!!window.PptxGenJS}).then(function(){return RC.docToPptx(doc)}).then(cleanZip).then(function(b){save(b,name+".pptx")});
+  }
+  p.then(function(){say("រួចរាល់ ✓ · "+name+"."+f,"ok")}).catch(function(e){say("Error: "+(e.message||e),"err")}).then(function(){setBusy(false)});
+}
+document.querySelectorAll("[data-f]").forEach(function(b){b.onclick=function(){exportDoc(b.dataset.k,b.dataset.f)}});
+["oDet","oPro"].forEach(function(i){$(i).onchange=renderFld});
+
+/* ---------- start ---------- */
+loadIcs(false);
+if(location.hash==="#fld")show("fld");
+if(window.__reportTest)window.__reportTest={exportDoc:exportDoc,buildDoc:buildDoc};
+})();
+</script>
+</body>
+</html>
