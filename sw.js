@@ -1,10 +1,12 @@
 // Bump CACHE when you change index.html / ics.html / field.html so phones pick up the new version.
-const CACHE = 'ics-monitor-v27';
+const CACHE = 'ics-monitor-v28';
 const SHELL = [
   './',
   './index.html',
   './ics.html',
   './field.html',
+  './report.html',
+  './report-core.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
