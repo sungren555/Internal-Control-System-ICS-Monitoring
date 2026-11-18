@@ -187,13 +187,13 @@ function say(t,c){var m=$("msg");m.textContent=t;m.className="msg "+(c||"")}
 function proj(){return document.querySelector('input[name=proj]:checked').value}
 function today(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
 
-function loadConfig(){
+function loadConfig(quiet){
   if(!api()){$("setup").hidden=false;say("សូមភ្ជាប់ URL របស់ Apps Script ជាមុន។","err");return}
   var cached=ls("fl_cfg");
   if(cached){try{cfg=JSON.parse(cached);fillStaff()}catch(e){}}
   fetch(api()+"?action=config").then(function(r){return r.json()}).then(function(d){
     if(!d.ok)throw new Error(d.error);
-    cfg=d;ls("fl_cfg",JSON.stringify(d));fillStaff();say("");
+    cfg=d;ls("fl_cfg",JSON.stringify(d));fillStaff();if(!quiet)say("");
   }).catch(function(e){if(!cfg)say("មិនអាចទាញទិន្នន័យពី Sheet បានទេ៖ "+e.message,"err")});
 }
 
@@ -280,14 +280,29 @@ function notesWith(p){
   if(p.solution)a.push("✅ ដំណោះស្រាយ៖ "+p.solution);
   return a.join("\n");
 }
+// A Category / activity typed by hand is added to the sheet "Staff/Work" (so other staff can pick it) and the log uses the exact text stored there.
+function learnNew(p){
+  if(!(p.newCat||p.newAct))return Promise.resolve(false);
+  var q=JSON.stringify({project:p.project,category:p.category,activity:p.activity});
+  return fetch(api()+"?action=summary&month="+encodeURIComponent("~learn~"+q)+"&t="+Date.now())
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d&&d.ok&&d.category&&d.activity){p.category=d.category;p.activity=d.activity;p.newCat=false;p.newAct=false;return true}
+      return false;
+    }).catch(function(){return false});
+}
 function send(p,draftId,btns){
   var s=cfg&&cfg.staff.filter(function(x){return x.name===p.staff})[0];p.section=s?s.section:"";
-  var body=JSON.stringify({staff:p.staff,date:p.date,project:p.project,category:p.category,activity:p.activity,location:p.location,irpg:(p.irpg&&p.irpg!==OTHER?p.irpg:irpgOfVillage(p.location)),total:p.total,women:p.women,notes:notesWith(p),problem:p.problem||"",solution:p.solution||"",org:p.org||"",section:p.section});
+  var wasNew=!!(p.newCat||p.newAct),learned=false;
   btns.forEach(function(b){b.disabled=true});say("កំពុងបញ្ជូន...");
-  fetch(api(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body})
-    .then(function(r){return r.json()}).then(function(d){
+  learnNew(p).then(function(ok){
+    learned=ok;
+    var body=JSON.stringify({staff:p.staff,date:p.date,project:p.project,category:p.category,activity:p.activity,location:p.location,irpg:(p.irpg&&p.irpg!==OTHER?p.irpg:irpgOfVillage(p.location)),total:p.total,women:p.women,notes:notesWith(p),problem:p.problem||"",solution:p.solution||"",org:p.org||"",section:p.section});
+    return fetch(api(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body});
+  }).then(function(r){return r.json()}).then(function(d){
       if(!d.ok)throw new Error(d.error);
-      say("បានបញ្ជូនចូលផ្ទាំង "+d.tab+" ហើយ ✓","ok");
+      say("បានបញ្ជូនចូលផ្ទាំង "+d.tab+" ហើយ ✓"+(wasNew?(learned?" · បានបន្ថែមចូល Staff/Work ដើម្បីឱ្យអ្នកផ្សេងជ្រើសបាន":" · (Category/សកម្មភាពថ្មី មិនទាន់ចូល Staff/Work)"):""),"ok");
+      if(wasNew&&learned)loadConfig(true);
       if(draftId)delDraft(draftId,true);
       if(draftId&&draftId===editId||!draftId){editId=null;showEdit();clearForm()}
       loadMine();
@@ -349,7 +364,7 @@ function formData(){
   var cv=$("cat").value,c=(cfg&&cfg.activities[proj()]||[])[cv];
   var category=cv==="__new"?$("catNew").value.trim():(c?c.category:"");
   var activity=$("act").value==="__new"?$("actNew").value.trim():$("act").value;
-  return {staff:$("staff").value,date:$("date").value,project:proj(),category:category,activity:activity,
+  return {staff:$("staff").value,date:$("date").value,project:proj(),category:category,activity:activity,newCat:cv==="__new",newAct:$("act").value==="__new",
     location:getLoc(),irpg:$("irpg").value,total:$("tot").value,women:$("wom").value,notes:$("note").value.trim(),
     problem:$("prob").value.trim(),solution:$("sol").value.trim(),org:curOrg()};
 }
