@@ -209,11 +209,24 @@ html[data-theme=dark] .seedbox>b{color:#f0c85a}
 .seedbox li em{font-style:normal;font-weight:800;white-space:nowrap}
 .seedbox .tot{margin-top:6px;font-weight:800;text-align:right}
 .seedbox.none{border-color:var(--line);background:var(--c-soft);color:var(--muted);font-weight:600}
-.stats.s1{grid-template-columns:1fr;margin-top:0}
-.stat[data-fk=seed]{border-color:#c98a1b;display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 12px}
-.stat[data-fk=seed] b{color:#b87500;font-size:28px}
-html[data-theme=dark] .stat[data-fk=seed] b{color:#f0c85a}
-.stat[data-fk=seed].sel{background:color-mix(in srgb,#e3b94a 18%,var(--card))}
+.seedbtn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:12px;font:inherit;font-weight:700;font-size:15px;
+  cursor:pointer;border:1.5px solid #c98a1b;background:color-mix(in srgb,#e3b94a 16%,var(--card));color:#9a6200}
+.seedbtn b{font-size:18px;color:inherit;background:#e3b94a;color:#3a2a00;border-radius:99px;padding:0 9px;min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+html[data-theme=dark] .seedbtn{color:#f0c85a}
+.seedbtn.back{border-color:var(--line);background:var(--field);color:var(--ink)}
+.svsum{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+.svsum span{font-size:13.5px;font-weight:700;border-radius:99px;padding:3px 11px;background:var(--c-soft);border:1px solid var(--c-line);color:var(--ink)}
+.svsum span.main{background:#e3b94a;border-color:#e3b94a;color:#3a2a00}
+.svlist{list-style:none;margin:8px 0 0;padding:0;max-height:70vh;overflow:auto}
+.svlist li{padding:10px 4px;border-bottom:1px dashed var(--line)}
+.svlist .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.svlist code{font-weight:700;background:var(--c-soft);color:var(--ct);border-radius:6px;padding:1px 8px;font-family:inherit}
+.svlist .nm{font-weight:700}
+.svlist small{display:block;color:var(--guide);font-size:14px}
+.svlist .sd{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.svlist .sd span{font-size:13.5px;font-weight:700;border-radius:8px;padding:2px 9px;background:color-mix(in srgb,#e3b94a 18%,var(--card));border:1px solid #c98a1b}
+.svlist .sd em{font-style:normal;color:#9a6200}
+html[data-theme=dark] .svlist .sd em{color:#f0c85a}
 .coll[aria-expanded=true] .chev{transform:rotate(90deg)}
 table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
@@ -404,7 +417,8 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
 
   <!-- ===== Farmers_List dashboard ===== -->
   <section class="card hidden" id="flDash">
-    <div class="card-h"><span class="pill"></span><h2>📋 Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2></div>
+    <div class="card-h"><span class="pill"></span><h2>📋 Farmers_List <small id="flYearLbl">បញ្ជីកសិករ</small></h2>
+      <button type="button" class="seedbtn" id="seedOpenBtn">🌾 កសិករខ្ចីពូជ <b id="fSeed">0</b></button></div>
     <button type="button" class="coll" data-coll="sfd" aria-expanded="false"><span>🔍 ស្វែងរកកសិករ Search</span><span class="chev">▸</span></button>
     <div class="collbody hidden">
       <label for="fdSearch" class="srch-l"><small>ID · Hus_Eng · Wif_Eng — មើលថាធ្វើរួចឬនៅ</small></label>
@@ -425,9 +439,6 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       <button class="stat" data-fk="resign"><b id="fResign">0</b><span>🚪 Resign</span></button>
       <button class="stat" data-fk="left"><b id="fLeft">0</b><span>⏳ មិនទាន់ត្រួតពិនិត្យ</span></button>
     </div>
-    <div class="stats s1">
-      <button class="stat" data-fk="seed" type="button"><b id="fSeed">0</b><span>🌾 កសិករខ្ចីពូជ Seed loan <small id="fSeedHint"></small></span></button>
-    </div>
     <div class="chart" id="flChart"></div>
     <div id="flVillages"></div>
     <div id="flLevels"></div>
@@ -438,6 +449,20 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
     <div class="btns">
       <a class="btn ghost" id="sheetLink2" target="_blank" rel="noopener">បើក Google Sheet</a>
     </div>
+  </section>
+
+  <!-- ===== Seed loan farmers (separate screen) ===== -->
+  <section class="card hidden" id="seedView">
+    <div class="card-h"><span class="pill"></span><h2>🌾 កសិករខ្ចីពូជ <small>Seed loan · <span id="svYear"></span></small></h2>
+      <button type="button" class="seedbtn back" id="seedBackBtn">← ត្រឡប់ក្រោយ</button></div>
+    <label for="seedSearch" class="srch-l"><small>ស្វែងរកតាម Family_ID · ឈ្មោះ Hus / Wife (ខ្មែរ ឬ English)</small></label>
+    <input id="seedSearch" type="search" autocomplete="off" placeholder="🔍 ស្វែងរក ID ឬឈ្មោះ… (ឧ. BM001, Sok San)">
+    <div class="row">
+      <div><label for="svIrpg">IRPG</label><select id="svIrpg"></select></div>
+      <div><label for="svVillage">Village</label><select id="svVillage"></select></div>
+    </div>
+    <div class="svsum" id="svSum"></div>
+    <ul class="svlist" id="svList"></ul>
   </section>
 
   <!-- ===== Export ICS-III -> next year ===== -->
@@ -1086,6 +1111,7 @@ function applySection() {
   applyTheme();
   document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.sec === cur ? 'true' : 'false'); });
   var fl = cur === 'FARMERS';
+  seedOpen = false; $('seedView').classList.add('hidden'); $('queueCard').classList.remove('hidden');
   ['formCard', 'dashCard'].forEach(function (id) { $(id).classList.toggle('hidden', fl); });
   ['flDash', 'flExport', 'flReg'].forEach(function (id) { $(id).classList.toggle('hidden', !fl); });
   if (fl) { flDetail = null; renderFarmers(); renderQueue(); return; }
@@ -1526,6 +1552,45 @@ function flTable(head, rows) {
 function renderFarmers() {
   $('flYearLbl').textContent = 'បញ្ជីកសិករឆ្នាំ ' + year;
   renderFlDash(); renderExport(); renderReg();
+  if (seedOpen) renderSeedView();
+}
+var seedOpen = false, sv = { irpg: '', village: '' };
+function setSeedView(open) {
+  seedOpen = open;
+  ['flDash', 'flExport', 'flReg', 'queueCard'].forEach(function (id) { $(id).classList.toggle('hidden', open); });
+  $('seedView').classList.toggle('hidden', !open);
+  if (open) { sv = { irpg: '', village: '' }; $('seedSearch').value = ''; renderSeedView(); window.scrollTo(0, 0); }
+}
+function renderSeedView() {
+  $('svYear').textContent = year;
+  var all = data.farmers;
+  if (all.length && all.every(function (x) { return x.seed === undefined; })) {
+    $('svSum').innerHTML = ''; $('svList').innerHTML = '<li>ទិន្នន័យពូជមិនទាន់មាន — សូមដាក់ Code.gs ថ្មី រួចចុចប៊ូតុង ↻ Sync។</li>'; return;
+  }
+  var base = all.filter(hasSeed);
+  fillSelect($('svIrpg'), uniqSorted(base.map(function (x) { return x.irpg; })), 'ទាំងអស់ · All', sv.irpg);
+  sv.irpg = $('svIrpg').value;
+  var inI = base.filter(function (x) { return !sv.irpg || x.irpg === sv.irpg; });
+  fillSelect($('svVillage'), uniqSorted(inI.map(function (x) { return x.village; })), 'ទាំងអស់ · All', sv.village);
+  sv.village = $('svVillage').value;
+  var q = $('seedSearch').value.trim().toLowerCase(), tokens = q ? q.split(/\s+/) : [];
+  var items = inI.filter(function (x) { return !sv.village || x.village === sv.village; }).filter(function (x) {
+    var hay = [x.code, x.husKh, x.husEn, x.wifeKh, x.wifeEn].join(' ').toLowerCase();
+    return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
+  }).sort(function (a, b) { return (a.irpg + a.village).localeCompare(b.irpg + b.village, undefined, { numeric: true }) || String(a.code).localeCompare(String(b.code), undefined, { numeric: true }); });
+  var tot = {}, grand = 0;
+  items.forEach(function (x) { seedRows(x).forEach(function (r) { tot[r.name] = (tot[r.name] || 0) + r.n; grand += r.n; }); });
+  $('svSum').innerHTML = '<span class="main">👥 ' + items.length + ' កសិករ</span>' + SEED_TYPES.filter(function (t) { return tot[t[1]]; }).map(function (t) {
+    return '<span>' + esc(t[1]) + ': ' + fmtNum(tot[t[1]]) + ' ' + SEED_UNIT + '</span>';
+  }).join('') + (grand ? '<span class="main">សរុប ' + fmtNum(grand) + ' ' + SEED_UNIT + '</span>' : '');
+  $('svList').innerHTML = items.slice(0, 300).map(function (x) {
+    var nm = esc(x.husEn || x.husKh) + (x.wifeEn && x.wifeEn !== 'Widower' ? ' / ' + esc(x.wifeEn) : '');
+    var kh = [x.husKh, x.wifeKh].filter(Boolean).join(' / ');
+    return '<li><div class="top"><code>' + esc(x.code) + '</code><span class="nm">' + nm + '</span></div>' +
+      '<small>' + (kh ? esc(kh) + ' · ' : '') + esc(x.irpg) + ' · ' + esc(x.village) + '</small>' +
+      '<div class="sd">' + seedRows(x).map(function (r) { return '<span>' + esc(r.name) + ' <em>' + fmtNum(r.n) + ' ' + SEED_UNIT + '</em></span>'; }).join('') + '</div></li>';
+  }).join('') + (items.length > 300 ? '<li>… និង ' + (items.length - 300) + ' ទៀត (ស្វែងរក ឬជ្រើស Village ដើម្បីបង្រួម)</li>' : '') ||
+    '<li>រកមិនឃើញកសិករខ្ចីពូជ។</li>';
 }
 function renderFlDash() {
   var list = data.farmers, elig = eligibleSet(), c1 = ics1Map();
@@ -1539,7 +1604,6 @@ function renderFlDash() {
   $('fTotal').textContent = c.t; $('fYes').textContent = c.y; $('fElig').textContent = c.e;
   $('fNo').textContent = c.n; $('fResign').textContent = c.r; $('fLeft').textContent = c.t - c.y - c.n - c.r;
   $('fSeed').textContent = f.filter(hasSeed).length;
-  $('fSeedHint').textContent = list.length && list.every(function (x) { return x.seed === undefined; }) ? '(ចុច ↻ Sync)' : '';
 
   $('flChart').innerHTML = f.length ? chartHtml(
     [{ n: c.y, color: COL.yes, label: '✅ Yes' }, { n: c.n, color: COL.no, label: '❌ No' }, { n: c.r, color: COL.resign, label: '🚪 Resign' },
@@ -1815,6 +1879,11 @@ $('flLevels').addEventListener('click', flTableClick);
 $('flVillages').addEventListener('click', flTableClick);
 $('dSearch').oninput = function () { renderTrack('dSearch', 'dSearchRes'); };
 $('fdSearch').oninput = function () { renderTrack('fdSearch', 'fdSearchRes'); };
+$('seedOpenBtn').onclick = function () { setSeedView(true); };
+$('seedBackBtn').onclick = function () { setSeedView(false); renderFarmers(); window.scrollTo(0, 0); };
+$('seedSearch').oninput = renderSeedView;
+$('svIrpg').onchange = function () { sv.irpg = this.value; sv.village = ''; renderSeedView(); };
+$('svVillage').onchange = function () { sv.village = this.value; renderSeedView(); };
 $('flDClose').onclick = function () { flDetail = null; renderFlDash(); };
 $('toYear').onchange = function () { toYear = this.value; renderFarmers(); };
 $('exportBtn').onclick = doExport;
