@@ -27,11 +27,13 @@
 }
 html[data-theme=dark]{
   color-scheme:dark;
-  --ink:#eef3ee; --muted:#b7c3b9; --guide:#6a776e; --line:#36443b; --line2:#2a362e; --bg:#0d130f; --card:#171f1a; --field:#212b25; --ib:#4a5a4f;
-  --segbg:#27322b; --track:#2b372f; --dis-bg:#2b352e; --dis-fg:#8f9c92;
-  --no-t:#ff8f86; --left-fg:#f4a66b; --left-bg:#3a2a1b;
-  --shadow:0 1px 2px rgba(0,0,0,.5),0 8px 24px rgba(0,0,0,.35);
+  --ink:#e8eefb; --muted:#a9b6cf; --guide:#7585a3; --line:#27344f; --line2:#1f2a42; --bg:#0a0f1a; --card:#131b2e; --field:#1b2540; --ib:#3b4a6b;
+  --segbg:#1b2540; --track:#243150; --dis-bg:#1f2a42; --dis-fg:#7f8da8;
+  --no-t:#ff8f86; --left-fg:#f4a66b; --left-bg:#33261a;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 8px 24px rgba(0,0,0,.4);
 }
+html[data-theme=dark] header{background:linear-gradient(180deg,#131c32 0%,#0d1424 100%);border-bottom:1px solid var(--line)}
+html[data-theme=dark] .tab[aria-selected=false]{filter:saturate(.8) brightness(.85)}
 html[data-theme=dark] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23cfe3d3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 html[data-theme=dark] .tab[aria-selected=true]{color:var(--tl)}
 *{box-sizing:border-box}
@@ -198,6 +200,20 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .pk:hover,.pk:focus-visible{background:var(--card)}
 .pk small{color:var(--muted);font-size:13.5px}
 .farmer .lh{font-size:14px;color:var(--muted)}
+.seedbox{margin-top:10px;padding:10px 12px;border-radius:12px;border:1.5px solid #c98a1b;background:color-mix(in srgb,#e3b94a 14%,var(--card))}
+.seedbox>b{display:block;font-size:15px;color:#9a6200}
+html[data-theme=dark] .seedbox>b{color:#f0c85a}
+.seedbox ul{list-style:none;margin:6px 0 0;padding:0}
+.seedbox li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.seedbox li:last-child{border-bottom:0}
+.seedbox li em{font-style:normal;font-weight:800;white-space:nowrap}
+.seedbox .tot{margin-top:6px;font-weight:800;text-align:right}
+.seedbox.none{border-color:var(--line);background:var(--c-soft);color:var(--muted);font-weight:600}
+.stats.s1{grid-template-columns:1fr;margin-top:0}
+.stat[data-fk=seed]{border-color:#c98a1b;display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 12px}
+.stat[data-fk=seed] b{color:#b87500;font-size:28px}
+html[data-theme=dark] .stat[data-fk=seed] b{color:#f0c85a}
+.stat[data-fk=seed].sel{background:color-mix(in srgb,#e3b94a 18%,var(--card))}
 .coll[aria-expanded=true] .chev{transform:rotate(90deg)}
 table.t5{font-size:15px}
 table.t5 th{font-size:12.5px;line-height:1.2;vertical-align:bottom}
@@ -409,6 +425,9 @@ header select.yearsel:focus{box-shadow:0 0 0 3px rgba(255,255,255,.35);backgroun
       <button class="stat" data-fk="resign"><b id="fResign">0</b><span>🚪 Resign</span></button>
       <button class="stat" data-fk="left"><b id="fLeft">0</b><span>⏳ មិនទាន់ត្រួតពិនិត្យ</span></button>
     </div>
+    <div class="stats s1">
+      <button class="stat" data-fk="seed" type="button"><b id="fSeed">0</b><span>🌾 កសិករខ្ចីពូជ Seed loan <small id="fSeedHint"></small></span></button>
+    </div>
     <div class="chart" id="flChart"></div>
     <div id="flVillages"></div>
     <div id="flLevels"></div>
@@ -611,7 +630,7 @@ function applyTheme() {
   root.dataset.theme = dark ? 'dark' : 'light';
   root.style.setProperty('--c', dark ? s.dk : s.color);
   root.style.setProperty('--ct', dark ? s.tx : s.color);
-  $('themeColor').setAttribute('content', dark ? s.dk : s.color);
+  $('themeColor').setAttribute('content', dark ? '#0d1424' : s.color);
   $('themeBtn').innerHTML = dark ? ICON_SUN : ICON_MOON;
   $('themeBtn').title = dark ? 'Light mode' : 'Dark mode';
   $('themeBtn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
@@ -685,7 +704,7 @@ function sourceList(sec) {
   if (sec === 'ICS-I') {
     return data.farmers.map(function (f) {
       return { irpg: f.irpg, village: f.village, code: f.code, hus: f.husEn || f.husKh || '', wife: f.wifeEn || f.wifeKh || '',
-               yearJoin: f.yearJoin, status: f.status };
+               yearJoin: f.yearJoin, status: f.status, seed: f.seed };
     });
   }
   var byCode = {};
@@ -825,6 +844,22 @@ function groupBy(name) {
 }
 function numOf(v) { var n = parseFloat(String(v || '').replace(/,/g, '')); return isNaN(n) ? 0 : n; }
 function fmtNum(n) { return String(Math.round(n * 100) / 100); }
+var SEED_UNIT = 'kg';
+var SEED_TYPES = [['prn', 'Phka Rumduol Normal'], ['rjn', 'Red Jasmine Normal'], ['prc', 'Phka Rumduol Certified Seed'], ['rjh', 'Red Jasmine High Quality Seed']];
+function seedRows(f) {
+  var s = (f && f.seed) || {};
+  return SEED_TYPES.map(function (t) { return { name: t[1], n: numOf(s[t[0]]) }; }).filter(function (r) { return r.n > 0; });
+}
+function hasSeed(f) { return seedRows(f).length > 0; }
+function seedBlock(f) {
+  if (f.seed === undefined) return '<div class="seedbox none">🌾 ខ្ចីពូជ Seed — ចុចប៊ូតុង ↻ ដើម្បីទាញទិន្នន័យថ្មី</div>';
+  var rows = seedRows(f);
+  if (!rows.length) return '<div class="seedbox none">🌾 ខ្ចីពូជ Seed: មិនបានខ្ចី</div>';
+  var tot = rows.reduce(function (t, r) { return t + r.n; }, 0);
+  return '<div class="seedbox"><b>🌾 ខ្ចីពូជ Seed loan</b><ul>' + rows.map(function (r) {
+    return '<li><span>' + esc(r.name) + '</span><em>' + fmtNum(r.n) + ' ' + SEED_UNIT + '</em></li>';
+  }).join('') + '</ul>' + (rows.length > 1 ? '<div class="tot">សរុប ' + fmtNum(tot) + ' ' + SEED_UNIT + '</div>' : '') + '</div>';
+}
 function parseGeo(g) {
   var m = String(g || '').match(/(-?\d+(?:\.\d+)?)[\s,;]+(-?\d+(?:\.\d+)?)/);
   return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;     // [lat, lon]
@@ -1026,7 +1061,7 @@ function matchFarmer() {
     '<dt>ប្រពន្ធ Wife</dt><dd>' + esc(hit.wife || '-') + '</dd>' +
     '<dt>ឆ្នាំចូលរួម Year</dt><dd>' + esc(hit.yearJoin || '-') + '</dd>' +
     (PREV_LABEL[cur] ? '<dt>' + PREV_LABEL[cur] + '</dt><dd><span class="tag ' + esc(hit.prev) + '" style="margin:0">' + esc(hit.prev || '-') + '</span></dd>' : '') +
-    (ex ? ex.row : '') + '</dl>' + (ex ? ex.body : '') +
+    (ex ? ex.row : '') + '</dl>' + (ex ? ex.body : '') + (cur === 'ICS-I' ? seedBlock(hit) : '') +
     (isDone ? '<div class="bad" style="margin-top:6px">បានកត់ត្រារួចហើយ · Already recorded</div>' : '');
   syncStatusField();
 }
@@ -1503,6 +1538,8 @@ function renderFlDash() {
   var c = tally(f, c1, elig);
   $('fTotal').textContent = c.t; $('fYes').textContent = c.y; $('fElig').textContent = c.e;
   $('fNo').textContent = c.n; $('fResign').textContent = c.r; $('fLeft').textContent = c.t - c.y - c.n - c.r;
+  $('fSeed').textContent = f.filter(hasSeed).length;
+  $('fSeedHint').textContent = list.length && list.every(function (x) { return x.seed === undefined; }) ? '(ចុច ↻ Sync)' : '';
 
   $('flChart').innerHTML = f.length ? chartHtml(
     [{ n: c.y, color: COL.yes, label: '✅ Yes' }, { n: c.n, color: COL.no, label: '❌ No' }, { n: c.r, color: COL.resign, label: '🚪 Resign' },
@@ -1550,12 +1587,13 @@ function renderFlDetail(f, elig, c1) {
       case 'nr': return k === 'no' || k === 'resign';
       case 'left': return !k;
       case 'elig': return e;
+      case 'seed': return hasSeed(x);
     }
     return false;
   }).sort(function (a, b) {
     return (a.irpg + a.village).localeCompare(b.irpg + b.village, undefined, { numeric: true }) || a.code.localeCompare(b.code, undefined, { numeric: true });
   });
-  var label = { total: 'សរុប', yes: 'ជាប់ ICS-I (Yes)', no: 'Compliance No', resign: 'Resign', nr: 'No / Resign', left: 'មិនទាន់ត្រួតពិនិត្យ', elig: 'បន្តឆ្នាំក្រោយ' }[flDetail.kind];
+  var label = { total: 'សរុប', yes: 'ជាប់ ICS-I (Yes)', no: 'Compliance No', resign: 'Resign', nr: 'No / Resign', left: 'មិនទាន់ត្រួតពិនិត្យ', elig: 'បន្តឆ្នាំក្រោយ', seed: '🌾 កសិករខ្ចីពូជ' }[flDetail.kind];
   var where = flDetail.village ? ' · ' + flDetail.irpg + ' · ' + flDetail.village : (flDetail.irpg ? ' · ' + flDetail.irpg : '');
   $('flDTitle').textContent = label + (flDetail.lvl !== null ? ' · ' + lvLabel(flDetail.lvl) : '') + where + ' (' + items.length + ')';
   var out = '', lastV = null;
@@ -1565,7 +1603,8 @@ function renderFlDetail(f, elig, c1) {
     var lk = classifyLevel(x.level), next = lk && elig.has(up(x.code)) ? ' → ' + LV[LV[lk].next].label : '';
     var r = c1[up(x.code)], tag = r ? ' <span class="tag ' + esc(r.compliance) + '">ICS-I: ' + esc(r.compliance) + '</span>' : '';
     out += '<li><code>' + esc(x.code) + '</code>' + esc(x.husEn || x.husKh) + (x.wifeEn && x.wifeEn !== 'Widower' ? ' / ' + esc(x.wifeEn) : '') + tag +
-      '<small>' + esc(x.level || '-') + esc(next) + '</small></li>';
+      '<small>' + (flDetail.kind === 'seed' ? '🌾 ' + seedRows(x).map(function (r) { return esc(r.name) + ' ' + fmtNum(r.n) + ' ' + SEED_UNIT; }).join(' · ') + '<br>' : '') +
+      esc(x.level || '-') + esc(next) + '</small></li>';
   });
   if (items.length > 600) out += '<li>… និង ' + (items.length - 600) + ' ទៀត (ជ្រើស Village ដើម្បីបង្រួម)</li>';
   $('flDList').innerHTML = out || '<li>មិនមានឈ្មោះទេ។</li>';
